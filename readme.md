@@ -1,48 +1,91 @@
-# Projekt dla Marka lyska
+# 🚀 Remodernizacja Strony Marka Łyska
 
-wiec projekt ten jest to remodernizacja jego juz dzialającej strony [strona](https://nieruchomosciistebna.pl)
+Nowa generacja aplikacji webowej – szybka, responsywna, interaktywna i nowoczesna.
 
-## Rzeczy które musimy poprawić
+## 🎯 Cel projektu
 
-- responsywnosc
-- animacje
-- backend
-- search bar
-- imgs
-- mode
-- szybkosc ladowania
-- seo
-- fav
-- recaptcha
-- rekomendacje
-- sortowanie
+Celem projektu jest przebudowanie istniejącej strony Marka, tak aby była bardziej nowoczesna, szybsza, rozbudowana funkcjonalnie oraz przyjazna użytkownikom.
 
-### Rzeczy do dodania
+---
 
-- Konto
-  - Login/Register
-  - fav
-  - moje dzialki
-- ai assistant
-- auto_remodel_zdj
+## 🛠️ Zakres prac
 
-#### Programowanie
+### 🔧 Rzeczy do poprawy
 
-Wiec apk webowa bedzie pisana w
+- 📱 Responsywność
+- 🎞️ Animacje / przejścia
+- 🖥️ Backend – stabilizacja i modernizacja
+- 🔍 Search bar
+- 🖼️ Optymalizacja zdjęć (compress, lazy-load, formaty)
+- 🌙 Tryb jasny/ciemny
+- ⚡ Szybkość ładowania
+- 🔎 SEO (meta, OG, struktury danych, sitemap)
+- 🔖 Favicon + manifest
+- 🔐 reCAPTCHA
+- ⭐ Rekomendacje
+- ↕️ Sortowanie wyników
 
-- Docker
-  - backend
-    - Golang
-      - gorm
-      - gin
-      - jwt
-      - etc
-    - Baza danych
-      - postgresql
-  - frontend
-    - Jsx/Tsx
-      - NextJs
-      - Seo
-      - Motions
-      - itd
-# Marek_yes
+---
+
+## ➕ Rzeczy do dodania
+
+- 👤 System kont użytkowników
+- 🔐 Login / Register (JWT)
+- ❤️ Ulubione (fav)
+- 📁 Moje działki
+- 🤖 Asystent AI
+- 🖼️ auto_remodel_zdj – automatyczna obróbka zdjęć AI
+
+---
+
+## 🧩 Architektura projektu
+
+### 🐳 Docker
+
+Całość będzie konteneryzowana w środowisku Docker, aby uprościć wdrażanie i utrzymanie.
+
+---
+
+## 🔙 Backend
+
+**Technologie backendowe:**
+
+- Golang
+- GORM
+- Gin
+- JWT
+- Obsługa plików, walidacje, middleware, security
+
+---
+
+## 🗄️ Baza danych
+
+- PostgreSQL
+
+---
+
+## 🎨 Frontend
+
+**Technologie frontendowe:**
+
+- Next.js
+- JSX / TSX
+- SEO
+- Animacje i motion design
+- Optymalizacja statycznych zasobów
+
+---
+
+## 🧪 Programowanie / Założenia techniczne
+
+- Clean Architecture
+- Modularność
+- CI/CD-ready
+- Skalowalność
+- Optymalizacja Lighthouse
+
+---
+
+## 🏁 Status projektu
+
+**Marek_yes** – projekt zaakceptowany i gotowy do realizacji.
