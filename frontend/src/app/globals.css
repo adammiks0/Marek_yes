@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --toast-bg: #1f2937;
+  --toast-color: #ffffff;
 }
 
 @theme inline {
@@ -17,6 +19,13 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #f9fafb;
+  --toast-bg: #f9fafb;
+  --toast-color: #1f2937;
 }
 
 body {
