@@ -29,9 +29,12 @@ const TYPES = [
 
 export default function NieruchomosciPage() {
   const [estates, setEstates] = useState<Estate[]>([]);
+  const [filteredEstates, setFilteredEstates] = useState<Estate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   // Filtry
   const [localization, setLocalization] = useState("");
@@ -45,6 +48,16 @@ export default function NieruchomosciPage() {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
   const [surfaceRange, setSurfaceRange] = useState({ min: 0, max: 10000 });
 
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredEstates.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEstates = filteredEstates.slice(startIndex, endIndex);
+
   useEffect(() => {
     loadEstates();
   }, []);
@@ -54,6 +67,7 @@ export default function NieruchomosciPage() {
       setLoading(true);
       const data = await ApiClient.getAllEstates();
       setEstates(data);
+      setFilteredEstates(data);
 
       // Calculate ranges
       if (data.length > 0) {
@@ -89,7 +103,7 @@ export default function NieruchomosciPage() {
       if (type) params.type = type;
 
       const results = await ApiClient.searchEstates(params);
-      
+
       // Filter by search query if provided
       let filtered = results;
       if (searchQuery.trim()) {
@@ -98,12 +112,14 @@ export default function NieruchomosciPage() {
             estate.localization
               .toLowerCase()
               .includes(searchQuery.toLowerCase()) ||
-            estate.opis.toLowerCase().includes(searchQuery.toLowerCase())
+            estate.opis.toLowerCase().includes(searchQuery.toLowerCase()),
         );
       }
 
       setEstates(filtered);
-      
+      setFilteredEstates(filtered);
+      setCurrentPage(1); // Reset to first page
+
       if (filtered.length === 0) {
         toast("Nie znaleziono nieruchomości spełniających kryteria", {
           icon: "ℹ️",
@@ -125,6 +141,7 @@ export default function NieruchomosciPage() {
     setSurfaceMax("");
     setType("");
     setSearchQuery("");
+    setCurrentPage(1);
     loadEstates();
   };
 
@@ -158,11 +175,10 @@ export default function NieruchomosciPage() {
               </button>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`px-6 py-3 rounded-xl transition-all font-semibold flex items-center gap-2 ${
-                  showFilters || hasActiveFilters
+                className={`px-6 py-3 rounded-xl transition-all font-semibold flex items-center gap-2 ${showFilters || hasActiveFilters
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
-                }`}
+                  }`}
               >
                 <Filter className="w-5 h-5" />
                 Filtry
@@ -214,15 +230,34 @@ export default function NieruchomosciPage() {
                   {/* Cena Min */}
                   <div>
                     <label className="block text-black dark:text-white font-semibold mb-2">
-                      Cena minimalna: {priceMin || priceRange.min} zł
+                      Cena minimalna
                     </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={priceRange.min}
+                        max={priceRange.max}
+                        step="10000"
+                        value={priceMin || priceRange.min}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? parseInt(e.target.value)
+                            : "";
+                          setPriceMin(val.toString());
+                        }}
+                        className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                        placeholder="Min"
+                      />
+                      <span className="text-black dark:text-white">zł</span>
+                    </div>
                     <input
                       type="range"
                       min={priceRange.min}
                       max={priceRange.max}
+                      step="10000"
                       value={priceMin || priceRange.min}
                       onChange={(e) => setPriceMin(e.target.value)}
-                      className="w-full"
+                      className="w-full mt-2"
                     />
                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
                       <span>{priceRange.min.toLocaleString("pl-PL")} zł</span>
@@ -233,15 +268,34 @@ export default function NieruchomosciPage() {
                   {/* Cena Max */}
                   <div>
                     <label className="block text-black dark:text-white font-semibold mb-2">
-                      Cena maksymalna: {priceMax || priceRange.max} zł
+                      Cena maksymalna
                     </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={priceRange.min}
+                        max={priceRange.max}
+                        step="10000"
+                        value={priceMax || priceRange.max}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? parseInt(e.target.value)
+                            : "";
+                          setPriceMax(val.toString());
+                        }}
+                        className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                        placeholder="Max"
+                      />
+                      <span className="text-black dark:text-white">zł</span>
+                    </div>
                     <input
                       type="range"
                       min={priceRange.min}
                       max={priceRange.max}
+                      step="10000"
                       value={priceMax || priceRange.max}
                       onChange={(e) => setPriceMax(e.target.value)}
-                      className="w-full"
+                      className="w-full mt-2"
                     />
                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
                       <span>{priceRange.min.toLocaleString("pl-PL")} zł</span>
@@ -252,15 +306,34 @@ export default function NieruchomosciPage() {
                   {/* Powierzchnia Min */}
                   <div>
                     <label className="block text-black dark:text-white font-semibold mb-2">
-                      Powierzchnia minimalna: {surfaceMin || surfaceRange.min} m²
+                      Powierzchnia minimalna
                     </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={surfaceRange.min}
+                        max={surfaceRange.max}
+                        step="5"
+                        value={surfaceMin || surfaceRange.min}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? parseInt(e.target.value)
+                            : "";
+                          setSurfaceMin(val.toString());
+                        }}
+                        className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                        placeholder="Min"
+                      />
+                      <span className="text-black dark:text-white">m²</span>
+                    </div>
                     <input
                       type="range"
                       min={surfaceRange.min}
                       max={surfaceRange.max}
+                      step="5"
                       value={surfaceMin || surfaceRange.min}
                       onChange={(e) => setSurfaceMin(e.target.value)}
-                      className="w-full"
+                      className="w-full mt-2"
                     />
                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
                       <span>{surfaceRange.min} m²</span>
@@ -271,15 +344,34 @@ export default function NieruchomosciPage() {
                   {/* Powierzchnia Max */}
                   <div>
                     <label className="block text-black dark:text-white font-semibold mb-2">
-                      Powierzchnia maksymalna: {surfaceMax || surfaceRange.max} m²
+                      Powierzchnia maksymalna
                     </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={surfaceRange.min}
+                        max={surfaceRange.max}
+                        step="5"
+                        value={surfaceMax || surfaceRange.max}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? parseInt(e.target.value)
+                            : "";
+                          setSurfaceMax(val.toString());
+                        }}
+                        className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                        placeholder="Max"
+                      />
+                      <span className="text-black dark:text-white">m²</span>
+                    </div>
                     <input
                       type="range"
                       min={surfaceRange.min}
                       max={surfaceRange.max}
+                      step="5"
                       value={surfaceMax || surfaceRange.max}
                       onChange={(e) => setSurfaceMax(e.target.value)}
-                      className="w-full"
+                      className="w-full mt-2"
                     />
                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
                       <span>{surfaceRange.min} m²</span>
@@ -317,17 +409,68 @@ export default function NieruchomosciPage() {
           </div>
         ) : (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {estates.map((estate) => (
+            <div className="mb-6">
+              <p className="text-black dark:text-white">
+                Znaleziono {filteredEstates.length}{" "}
+                {filteredEstates.length === 1
+                  ? "nieruchomość"
+                  : filteredEstates.length < 5
+                    ? "nieruchomości"
+                    : "nieruchomości"}
+                {filteredEstates.length > itemsPerPage &&
+                  ` (strona ${currentPage} z ${totalPages})`}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+              {currentEstates.map((estate) => (
                 <PropertyCard key={estate.id} estate={estate} />
               ))}
             </div>
 
-            {estates.length === 0 && (
+            {filteredEstates.length === 0 && (
               <div className="text-center py-20">
                 <p className="text-xl text-black dark:text-white">
                   Brak dostępnych nieruchomości
                 </p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                  onClick={() => goToPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-white dark:bg-gray-800 text-black dark:text-white rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Poprzednia
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => goToPage(page)}
+                      className={`px-4 py-2 rounded-xl transition-all ${currentPage === page
+                          ? "bg-blue-600 text-white"
+                          : "bg-white dark:bg-gray-800 text-black dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
+
+                <button
+                  onClick={() =>
+                    goToPage(Math.min(totalPages, currentPage + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-white dark:bg-gray-800 text-black dark:text-white rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Następna
+                </button>
               </div>
             )}
           </>

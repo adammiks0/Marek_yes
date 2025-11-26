@@ -3,7 +3,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home, Menu, X, User, Heart, LogOut, Moon, Sun } from "lucide-react";
+import {
+  Home,
+  Menu,
+  X,
+  User,
+  Heart,
+  LogOut,
+  Moon,
+  Sun,
+  Settings,
+} from "lucide-react";
 import { AuthService } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useDarkMode } from "@/contexts/DarkModeContext";
@@ -12,19 +22,36 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const { darkMode, toggleDarkMode } = useDarkMode();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
-    setIsAuthenticated(AuthService.isAuthenticated());
+
+    const checkAuth = async () => {
+      const auth = AuthService.isAuthenticated();
+      setIsAuthenticated(auth);
+
+      if (auth) {
+        const admin = await AuthService.isAdmin();
+        setIsAdmin(admin);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAuth();
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = () => {
     AuthService.removeToken();
     setIsAuthenticated(false);
+    setIsAdmin(false);
+    window.dispatchEvent(new Event("storage"));
     router.push("/");
   };
 
@@ -65,20 +92,17 @@ export default function Navbar() {
               Kontakt
             </Link>
 
-            <button
-              onClick={toggleDarkMode}
-              className="text-black dark:text-white hover:text-blue-600 transition-colors"
-              aria-label="Toggle dark mode"
-            >
-              {darkMode ? (
-                <Sun className="w-6 h-6" />
-              ) : (
-                <Moon className="w-6 h-6" />
-              )}
-            </button>
-
             {isAuthenticated ? (
               <>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="text-black dark:text-white hover:text-blue-600 transition-colors"
+                    title="Panel Administratora"
+                  >
+                    <Settings className="w-6 h-6" />
+                  </Link>
+                )}
                 <Link
                   href="/ulubione"
                   className="text-black dark:text-white hover:text-blue-600 transition-colors"
@@ -152,6 +176,14 @@ export default function Navbar() {
             </button>
             {isAuthenticated ? (
               <>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="block py-2 text-black dark:text-white"
+                  >
+                    Panel Administratora
+                  </Link>
+                )}
                 <Link
                   href="/ulubione"
                   className="block py-2 text-black dark:text-white"

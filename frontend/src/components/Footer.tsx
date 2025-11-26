@@ -25,7 +25,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-3">
               <a
-                href="#"
+                href="https://www.facebook.com/people/Nieruchomo%C5%9Bci-Istebna/100054207595006/#"
                 className="bg-gray-800 p-2 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <Facebook className="w-5 h-5" />
@@ -126,22 +126,33 @@ export default function Footer() {
             <ul className="space-y-3 text-gray-400">
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                +48 123 456 789
+                <p className="text-black dark:text-white">
+                  <a href="tel:+48505597504" className="underline">
+                    +48 505 597 504
+                  </a>
+                </p>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                kontakt@nieruchomosciistebna.pl
+                <a
+                  href="mailto:marek@nieruchomosciistebna.pl"
+                  className="underline dark:text-white text-black"
+                >
+                  marek@nieruchomosciistebna.pl
+                </a>
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center gap-2 ">
                 <MapPin className="w-4 h-4" />
-                43-470 Istebna
+                <p className="dark:text-white text-black">Jaworzynka 1010</p>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
-          <p>&copy; 2024 Nieruchomości Istebna. Wszystkie prawa zastrzeżone.</p>
+          <p>
+            &copy; Copyright 2018 All rights reserved by Nieruchomości Istebna
+          </p>
         </div>
       </div>
     </footer>

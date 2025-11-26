@@ -278,7 +278,7 @@ func SearchEstates(c *gin.Context) {
 }
 
 // GetRecommendations - rekomendacje na podstawie powierzchni i ceny
-/*func GetRecommendations(c *gin.Context) {
+func GetRecommendations(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -301,8 +301,8 @@ func SearchEstates(c *gin.Context) {
 	config.DB.Where("id != ?", estate.Id).
 		Where("price BETWEEN ? AND ?", priceMin, priceMax).
 		Where("surface BETWEEN ? AND ?", surfaceMin, surfaceMax).
-		Where("status = ?", false).                                                   // tylko dostępne
-		Order("ABS(price - ?) + ABS(surface - ?) ASC", estate.Price, estate.Surface). // sortuj po podobieństwie
+		Where("status = ?", false).                                                                  // tylko dostępne
+		Order(fmt.Sprintf("ABS(price - %d) + ABS(surface - %d) ASC", estate.Price, estate.Surface)). // sortuj po podobieństwie
 		Limit(5).
 		Find(&recommendations)
 
@@ -314,49 +314,73 @@ func SearchEstates(c *gin.Context) {
 			"surface":   estate.Surface,
 		},
 	})
-}*/
+}
 
 // ============= FUNKCJE POMOCNICZE DLA ZDJĘĆ =============
 
 // saveUploadedFiles - zapisuje przesłane pliki i zwraca tablicę ścieżek
 func saveUploadedFiles(c *gin.Context) ([]string, error) {
+	// POPRAWKA: MultipartForm automatycznie parsuje wszystkie pliki
 	form, err := c.MultipartForm()
 	if err != nil {
+		fmt.Println("Error parsing multipart form:", err)
 		return nil, err
 	}
 
+	// Pobierz wszystkie pliki z kluczem "images"
 	files := form.File["images"]
+
+	fmt.Printf("DEBUG: Received %d files\n", len(files))
+
 	if len(files) == 0 {
+		fmt.Println("No files uploaded")
 		return []string{}, nil
 	}
 
 	// Utwórz folder uploads jeśli nie istnieje
 	uploadDir := "./uploads"
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		fmt.Println("Error creating upload directory:", err)
 		return nil, err
 	}
 
 	var imagePaths []string
 
-	for _, file := range files {
+	for i, file := range files {
+		fmt.Printf("Processing file %d: %s (size: %d bytes)\n", i+1, file.Filename, file.Size)
+
 		// Sprawdź rozszerzenie
 		ext := strings.ToLower(filepath.Ext(file.Filename))
 		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+			fmt.Printf("Skipping file %s - invalid extension %s\n", file.Filename, ext)
 			continue
 		}
 
-		// Generuj unikalną nazwę
-		filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
-		filepath := filepath.Join(uploadDir, filename)
+		// Sprawdź rozmiar (maks 10MB)
+		if file.Size > 10*1024*1024 {
+			fmt.Printf("Skipping file %s - too large (%d bytes)\n", file.Filename, file.Size)
+			continue
+		}
+
+		// Generuj unikalną nazwę z timestampem i losowym numerem
+		timestamp := time.Now().Unix()
+		safeName := strings.ReplaceAll(file.Filename, " ", "_")
+		filename := fmt.Sprintf("%d_%d_%s", timestamp, i, safeName)
+		fullPath := filepath.Join(uploadDir, filename)
 
 		// Zapisz plik
-		if err := c.SaveUploadedFile(file, filepath); err != nil {
+		if err := c.SaveUploadedFile(file, fullPath); err != nil {
+			fmt.Printf("Error saving file %s: %v\n", file.Filename, err)
 			continue
 		}
 
-		imagePaths = append(imagePaths, "/uploads/"+filename)
+		// Dodaj ścieżkę (względną dla URL)
+		imagePath := "/uploads/" + filename
+		imagePaths = append(imagePaths, imagePath)
+		fmt.Printf("Successfully saved file: %s\n", imagePath)
 	}
 
+	fmt.Printf("DEBUG: Successfully saved %d files\n", len(imagePaths))
 	return imagePaths, nil
 }
 
@@ -373,9 +397,12 @@ func deleteImageFiles(imageData datatypes.JSON) {
 	}
 
 	for _, path := range imagePaths {
+		// Ścieżka zaczyna się od "/uploads/" więc dodajemy "."
 		filepath := "." + path
 		if err := os.Remove(filepath); err != nil {
 			fmt.Println("Failed to remove file:", filepath, err)
+		} else {
+			fmt.Println("Deleted file:", filepath)
 		}
 	}
 }
@@ -384,15 +411,33 @@ func deleteImageFiles(imageData datatypes.JSON) {
 
 // CreateEstate - dodaj nową nieruchomość z zdjęciami (admin)
 func CreateEstate(c *gin.Context) {
+	fmt.Println("\n=== DEBUG CreateEstate START ===")
+
 	var estate models.Estate
 
-	// Pobierz dane JSON z form-data
+	// Pobierz dane z form-data
 	typ := c.PostFormArray("type")
+	fmt.Printf("Received types: %v (count: %d)\n", typ, len(typ))
+
 	status := c.PostForm("status") == "true"
 	localization := c.PostForm("localization")
 	surface, _ := strconv.Atoi(c.PostForm("surface"))
 	price, _ := strconv.Atoi(c.PostForm("price"))
 	opis := c.PostForm("opis")
+
+	// Walidacja podstawowych danych
+	if len(typ) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Type is required"})
+		return
+	}
+	if localization == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Localization is required"})
+		return
+	}
+	if surface <= 0 || price <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid surface or price"})
+		return
+	}
 
 	// Konwertuj typ na JSON
 	typJSON, _ := json.Marshal(typ)
@@ -404,23 +449,41 @@ func CreateEstate(c *gin.Context) {
 	estate.Price = int32(price)
 	estate.Opis = opis
 
-	// Zapisz zdjęcia
+	fmt.Println("Starting file upload...")
+
+	// Zapisz zdjęcia - POPRAWIONE
 	imagePaths, err := saveUploadedFiles(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload images"})
+		fmt.Printf("Error uploading images: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload images", "details": err.Error()})
 		return
 	}
+
+	if len(imagePaths) == 0 {
+		fmt.Println("WARNING: No images were uploaded")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "At least one image is required"})
+		return
+	}
+
+	fmt.Printf("Uploaded %d images successfully\n", len(imagePaths))
 
 	// Konwertuj ścieżki zdjęć na JSON
 	imagesJSON, _ := json.Marshal(imagePaths)
 	estate.Images = datatypes.JSON(imagesJSON)
 
+	fmt.Println("Saving to database...")
+
+	// Zapisz do bazy danych
 	if err := config.DB.Create(&estate).Error; err != nil {
 		// Usuń zdjęcia jeśli nie udało się zapisać do DB
 		deleteImageFiles(estate.Images)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create estate"})
+		fmt.Printf("Database error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create estate", "details": err.Error()})
 		return
 	}
+
+	fmt.Printf("Estate created successfully with ID: %d\n", estate.Id)
+	fmt.Println("=== DEBUG CreateEstate END ===\n")
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Estate created successfully",
@@ -430,6 +493,8 @@ func CreateEstate(c *gin.Context) {
 
 // UpdateEstate - zaktualizuj nieruchomość z opcją dodania nowych zdjęć (admin)
 func UpdateEstate(c *gin.Context) {
+	fmt.Println("\n=== DEBUG UpdateEstate START ===")
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -442,46 +507,70 @@ func UpdateEstate(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("Updating estate ID: %d\n", id)
+
 	// Aktualizuj podstawowe dane
 	if typ := c.PostFormArray("type"); len(typ) > 0 {
+		fmt.Printf("Updating types: %v\n", typ)
 		typJSON, _ := json.Marshal(typ)
 		estate.Typ = datatypes.JSON(typJSON)
 	}
+
 	if status := c.PostForm("status"); status != "" {
 		estate.Status = status == "true"
+		fmt.Printf("Updating status: %v\n", estate.Status)
 	}
+
 	if localization := c.PostForm("localization"); localization != "" {
 		estate.Localization = localization
+		fmt.Printf("Updating localization: %s\n", localization)
 	}
+
 	if surface := c.PostForm("surface"); surface != "" {
 		if s, err := strconv.Atoi(surface); err == nil {
 			estate.Surface = int32(s)
+			fmt.Printf("Updating surface: %d\n", s)
 		}
 	}
+
 	if price := c.PostForm("price"); price != "" {
 		if p, err := strconv.Atoi(price); err == nil {
 			estate.Price = int32(p)
+			fmt.Printf("Updating price: %d\n", p)
 		}
 	}
+
 	if opis := c.PostForm("opis"); opis != "" {
 		estate.Opis = opis
+		fmt.Printf("Updating description (length: %d)\n", len(opis))
 	}
 
 	// Sprawdź czy są nowe zdjęcia
+	fmt.Println("Checking for new images...")
 	newImages, err := saveUploadedFiles(c)
+
 	if err == nil && len(newImages) > 0 {
+		fmt.Printf("Found %d new images, replacing old ones\n", len(newImages))
+
 		// Usuń stare zdjęcia z dysku
 		deleteImageFiles(estate.Images)
 
 		// Zapisz nowe ścieżki jako JSON
 		imagesJSON, _ := json.Marshal(newImages)
 		estate.Images = datatypes.JSON(imagesJSON)
+	} else {
+		fmt.Println("No new images, keeping existing ones")
 	}
 
+	// Zapisz zmiany
 	if err := config.DB.Save(&estate).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update estate"})
+		fmt.Printf("Database error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update estate", "details": err.Error()})
 		return
 	}
+
+	fmt.Printf("Estate updated successfully\n")
+	fmt.Println("=== DEBUG UpdateEstate END ===\n")
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Estate updated successfully",
@@ -491,6 +580,8 @@ func UpdateEstate(c *gin.Context) {
 
 // DeleteEstate - usuń nieruchomość wraz ze zdjęciami (admin)
 func DeleteEstate(c *gin.Context) {
+	fmt.Println("\n=== DEBUG DeleteEstate START ===")
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -503,14 +594,20 @@ func DeleteEstate(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("Deleting estate ID: %d\n", id)
+
 	// Usuń zdjęcia z dysku
 	deleteImageFiles(estate.Images)
 
 	// Usuń z bazy danych
 	if err := config.DB.Delete(&estate).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete estate"})
+		fmt.Printf("Database error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete estate", "details": err.Error()})
 		return
 	}
+
+	fmt.Printf("Estate deleted successfully\n")
+	fmt.Println("=== DEBUG DeleteEstate END ===\n")
 
 	c.JSON(http.StatusOK, gin.H{"message": "Estate deleted successfully"})
 }

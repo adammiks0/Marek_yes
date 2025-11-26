@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { DarkModeProvider } from "@/contexts/DarkModeContext";
+import { FavouritesProvider } from "@/contexts/FavouritesContext";
 import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,21 +26,23 @@ export default function RootLayout({
     <html lang="pl" suppressHydrationWarning>
       <body className={inter.className}>
         <DarkModeProvider>
-          <Navbar />
-          <main className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
-            {children}
-          </main>
-          <Footer />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                background: "var(--toast-bg)",
-                color: "var(--toast-color)",
-              },
-            }}
-          />
+          <FavouritesProvider>
+            <Navbar />
+            <main className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
+              {children}
+            </main>
+            <Footer />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: "var(--toast-bg)",
+                  color: "var(--toast-color)",
+                },
+              }}
+            />
+          </FavouritesProvider>
         </DarkModeProvider>
       </body>
     </html>

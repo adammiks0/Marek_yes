@@ -40,10 +40,10 @@ func main() {
 	r.POST("/api/login", handlers.Login)       // login
 
 	// Server - estates (public access)
-	r.GET("/api/estates", handlers.GetAllEstates)        // looking at all estates
-	r.GET("/api/estates/:id", handlers.GetEstateByID)    // single estate details
-	r.GET("/api/estates/search", handlers.SearchEstates) // searching estate (price min-max, localization, type, surface max-min)
-	// r.GET("/api/estates/:id/recommendations", handlers.GetRecommendations) // recommendations - matching estate algorithm
+	r.GET("/api/estates", handlers.GetAllEstates)                          // looking at all estates
+	r.GET("/api/estates/:id", handlers.GetEstateByID)                      // single estate details
+	r.GET("/api/estates/search", handlers.SearchEstates)                   // searching estate (price min-max, localization, type, surface max-min)
+	r.GET("/api/estates/:id/recommendations", handlers.GetRecommendations) // recommendations - matching estate algorithm
 
 	// ============= PROTECTED ROUTES (require JWT token) =============
 	protected := r.Group("/api")

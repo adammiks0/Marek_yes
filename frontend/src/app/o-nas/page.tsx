@@ -3,80 +3,77 @@ import { Users, Award, TrendingUp, MapPin, Phone, Mail } from "lucide-react";
 
 export default function ONasPage() {
   return (
-    <div className="relative pt-32 pb-20 min-h-screen bg-gradient-to-r from-blue-100 to-blue-500">
-      {/* Nakładka z blur */}
-      <div className="absolute inset-0 bg-white/20 backdrop-blur-2xl"></div>
+    <div className="pt-32 pb-20 min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold text-blue-900 dark:text-blue-300 mb-6">
+            O <span className="text-blue-600">nas</span>
+          </h1>
+          <p className="text-xl text-black dark:text-white max-w-3xl mx-auto">
+            Jesteśmy lokalną agencją nieruchomości działającą w Beskidach od
+            ponad 15 lat. Specjalizujemy się w sprzedaży działek, domów i
+            mieszkań w Istebnej, Koniakowie i okolicach.
+          </p>
+        </div>
 
-      {/* Hero content */}
-      <div className="relative z-10 text-center text-black">
-        {/* Hero */}
-        <section className="bg-gradient-to-br from-blue-50 to-white py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h1 className="text-5xl font-bold text-gray-900 mb-6">
-                O <span className="text-blue-600">nas</span>
-              </h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Jesteśmy lokalną agencją nieruchomości działającą w Beskidach od
-                ponad 15 lat. Specjalizujemy się w sprzedaży działek, domów i
-                mieszkań w Istebnej, Koniakowie i okolicach.
-              </p>
+        <div className="grid md:grid-cols-3 gap-8 mb-20">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center transition-colors">
+            <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Award className="w-8 h-8 text-blue-600" />
             </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Award className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl text-black font-bold mb-2">
-                  Doświadczenie
-                </h3>
-                <p className="text-gray-600">
-                  Ponad 15 lat na rynku nieruchomości w Beskidach
-                </p>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl  text-black font-bold mb-2">Zaufanie</h3>
-                <p className="text-gray-600">Ponad 500 zadowolonych klientów</p>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-black ">Sukces</h3>
-                <p className="text-gray-600">
-                  95% transakcji zakończonych sukcesem
-                </p>
-              </div>
-            </div>
+            <h3 className="text-xl text-black dark:text-white font-bold mb-2">
+              Doświadczenie
+            </h3>
+            <p className="text-black dark:text-white">
+              Ponad 15 lat na rynku nieruchomości w Beskidach
+            </p>
           </div>
-        </section>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center transition-colors">
+            <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-blue-600" />
+            </div>
+            <h3 className="text-xl text-black dark:text-white font-bold mb-2">
+              Zaufanie
+            </h3>
+            <p className="text-black dark:text-white">
+              Ponad 500 zadowolonych klientów
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center transition-colors">
+            <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <TrendingUp className="w-8 h-8 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-black dark:text-white">
+              Sukces
+            </h3>
+            <p className="text-black dark:text-white">
+              95% transakcji zakończonych sukcesem
+            </p>
+          </div>
+        </div>
 
         {/* Mission */}
-        <section className=" py-20">
+        <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                <h2 className="text-4xl font-bold text-black dark:text-white mb-6">
                   Nasza <span className="text-blue-600">misja</span>
                 </h2>
-                <p className="text-lg text-gray-700 mb-4">
+                <p className="text-lg text-black dark:text-white mb-4">
                   Pomagamy ludziom znaleźć ich wymarzone miejsce w Beskidach.
                   Każda nieruchomość to dla nas unikalna historia i możliwość
                   spełnienia marzeń naszych klientów.
                 </p>
-                <p className="text-lg text-gray-700 mb-4">
+                <p className="text-lg text-black dark:text-white mb-4">
                   Oferujemy profesjonalne doradztwo, kompleksową obsługę i
                   wsparcie na każdym etapie transakcji. Znamy lokalny rynek jak
                   nikt inny.
                 </p>
               </div>
-              <div className="bg-blue-600 rounded-2xl p-8 text-white">
+              <div className="bg-blue-600 dark:bg-blue-700 rounded-2xl p-8 text-white transition-colors">
                 <h3 className="text-2xl font-bold mb-6">Dlaczego my?</h3>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">

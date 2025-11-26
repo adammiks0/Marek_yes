@@ -1,4 +1,6 @@
 // ============= 2. API CLIENT (lib/api.ts) =============
+import { Estate, User, AuthResponse } from "@/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export class ApiClient {
@@ -32,6 +34,14 @@ export class ApiClient {
     });
     const data = await res.json();
     return data.estate;
+  }
+
+  static async getRecommendations(id: string): Promise<Estate[]> {
+    const res = await fetch(`${API_URL}/estates/${id}/recommendations`, {
+      cache: "no-store",
+    });
+    const data = await res.json();
+    return data.recommendations || [];
   }
 
   static async searchEstates(params: {
@@ -109,5 +119,40 @@ export class ApiClient {
       headers: this.getHeaders(true),
     });
     return res.json();
+  }
+
+  // Admin (Protected - Admin only)
+  static async createEstate(formData: FormData): Promise<Estate> {
+    const res = await fetch(`${API_URL}/admin/estates`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Failed to create estate");
+    const data = await res.json();
+    return data.estate;
+  }
+
+  static async updateEstate(id: number, formData: FormData): Promise<Estate> {
+    const res = await fetch(`${API_URL}/admin/estates/${id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Failed to update estate");
+    const data = await res.json();
+    return data.estate;
+  }
+
+  static async deleteEstate(id: number): Promise<void> {
+    const res = await fetch(`${API_URL}/admin/estates/${id}`, {
+      method: "DELETE",
+      headers: this.getHeaders(true),
+    });
+    if (!res.ok) throw new Error("Failed to delete estate");
   }
 }

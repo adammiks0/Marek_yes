@@ -7,49 +7,86 @@ import { Estate } from "@/types";
 import { useState } from "react";
 import { ApiClient } from "@/lib/api";
 import { AuthService } from "@/lib/auth";
+import { useFavourites } from "@/contexts/FavouritesContext";
+import toast from "react-hot-toast";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export default function PropertyCard({ estate }: { estate: Estate }) {
-  const [isLiked, setIsLiked] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const { isFavourite, refreshFavourites } = useFavourites();
+  const isLiked = isFavourite(estate.id);
+
+  // Normalize image URL
+  const getImageUrl = (image: string): string => {
+    if (!image) return "";
+    if (image.startsWith("http://") || image.startsWith("https://")) {
+      return image;
+    }
+    // If it starts with /uploads, use API URL
+    if (image.startsWith("/uploads")) {
+      return `${API_URL.replace("/api", "")}${image}`;
+    }
+    // Otherwise assume it's a relative path
+    return `${API_URL.replace("/api", "")}/${image}`;
+  };
+
   const firstImage =
     Array.isArray(estate.images) && estate.images.length > 0
-      ? estate.images[0]
+      ? getImageUrl(estate.images[0])
       : "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop";
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!AuthService.isAuthenticated()) {
-      alert("Zaloguj się, aby dodać do ulubionych");
+      toast.error("Zaloguj się, aby dodać do ulubionych");
       return;
     }
 
     try {
       if (isLiked) {
         await ApiClient.removeFromFavourites(estate.id);
+        toast.success("Usunięto z ulubionych");
       } else {
         await ApiClient.addToFavourites(estate.id);
+        toast.success("Dodano do ulubionych");
       }
-      setIsLiked(!isLiked);
+      // Refresh favourites from context
+      await refreshFavourites();
     } catch (error) {
+      toast.error("Błąd podczas aktualizacji ulubionych");
       console.error("Error toggling favourite:", error);
     }
   };
 
   return (
     <Link href={`/nieruchomosci/${estate.id}`}>
-      <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
-        <div className="relative h-64 overflow-hidden group">
-          <img
-            src={firstImage}
-            alt={estate.opis}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
+      <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
+        <div className="relative h-64 overflow-hidden group bg-gray-200 dark:bg-gray-700">
+          {!imageError && firstImage ? (
+            <img
+              src={firstImage}
+              alt={estate.opis}
+              onError={() => setImageError(true)}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+              <Square className="w-16 h-16 text-gray-400 dark:text-gray-600" />
+            </div>
+          )}
 
           <button
             onClick={handleLike}
-            className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+            className="absolute top-4 right-4 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg hover:scale-110 transition-transform z-10"
           >
             <Heart
-              className={`w-5 h-5 ${isLiked ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+              className={`w-5 h-5 ${
+                isLiked
+                  ? "fill-red-500 text-red-500"
+                  : "text-gray-600 dark:text-gray-400"
+              }`}
             />
           </button>
 
@@ -59,16 +96,18 @@ export default function PropertyCard({ estate }: { estate: Estate }) {
         </div>
 
         <div className="p-6">
-          <div className="flex items-center text-gray-500 text-sm mb-3">
-            <MapPin className="w-4 h-4 mr-1" />
+          <div className="flex items-center text-black dark:text-white text-sm mb-3">
+            <MapPin className="w-4 h-4 mr-1 text-blue-600" />
             {estate.localization}
           </div>
 
-          <p className="text-gray-600 mb-4 line-clamp-2">{estate.opis}</p>
+          <p className="text-black dark:text-white mb-4 line-clamp-2">
+            {estate.opis}
+          </p>
 
-          <div className="flex items-center gap-4 text-gray-600 mb-4 pb-4 border-b">
+          <div className="flex items-center gap-4 text-black dark:text-white mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-1">
-              <Square className="w-4 h-4" />
+              <Square className="w-4 h-4 text-blue-600" />
               <span className="text-sm">{estate.surface} m²</span>
             </div>
             <div className="text-sm">

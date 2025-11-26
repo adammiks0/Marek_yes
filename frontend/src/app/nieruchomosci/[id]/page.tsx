@@ -24,15 +24,22 @@ import {
   Wind,
   CheckCircle,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import PropertyCard from "@/components/PropertyCard";
+import { useFavourites } from "@/contexts/FavouritesContext";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export default function PropertyDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const [estate, setEstate] = useState<Estate | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [recommendations, setRecommendations] = useState<Estate[]>([]);
+  const { isFavourite, refreshFavourites } = useFavourites();
+  const isLiked = estate ? isFavourite(estate.id) : false;
 
   useEffect(() => {
     loadEstate();
@@ -42,6 +49,14 @@ export default function PropertyDetailsPage() {
     try {
       const data = await ApiClient.getEstateById(params.id as string);
       setEstate(data);
+
+      // Load recommendations
+      try {
+        const recs = await ApiClient.getRecommendations(params.id as string);
+        setRecommendations(recs);
+      } catch (error) {
+        console.error("Error loading recommendations:", error);
+      }
     } catch (error) {
       console.error("Error loading estate:", error);
     } finally {
@@ -51,46 +66,61 @@ export default function PropertyDetailsPage() {
 
   const handleLike = async () => {
     if (!AuthService.isAuthenticated()) {
-      alert("Zaloguj się, aby dodać do ulubionych");
+      toast.error("Zaloguj się, aby dodać do ulubionych");
       return;
     }
 
     try {
       if (isLiked) {
         await ApiClient.removeFromFavourites(estate!.id);
+        toast.success("Usunięto z ulubionych");
       } else {
         await ApiClient.addToFavourites(estate!.id);
+        toast.success("Dodano do ulubionych");
       }
-      setIsLiked(!isLiked);
+      await refreshFavourites();
     } catch (error) {
+      toast.error("Błąd podczas aktualizacji ulubionych");
       console.error("Error:", error);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl text-gray-600">Ładowanie...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-2xl text-black dark:text-white">Ładowanie...</div>
       </div>
     );
   }
 
   if (!estate) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl text-gray-600">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-2xl text-black dark:text-white">
           Nie znaleziono nieruchomości
         </div>
       </div>
     );
   }
 
+  // Normalize image URLs
+  const getImageUrl = (image: string): string => {
+    if (!image) return "";
+    if (image.startsWith("http://") || image.startsWith("https://")) {
+      return image;
+    }
+    if (image.startsWith("/uploads")) {
+      return `${API_URL.replace("/api", "")}${image}`;
+    }
+    return `${API_URL.replace("/api", "")}/${image}`;
+  };
+
   const images =
     Array.isArray(estate.images) && estate.images.length > 0
-      ? estate.images
+      ? estate.images.map(getImageUrl)
       : [
-          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=800&fit=crop",
-        ];
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=800&fit=crop",
+      ];
 
   const nextImage = () =>
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -98,14 +128,14 @@ export default function PropertyDetailsPage() {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Header */}
-      <div className="bg-white shadow-sm sticky top-20 z-40">
+      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-20 z-40 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+              className="flex items-center gap-2 text-black dark:text-white hover:text-blue-600 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Powrót</span>
@@ -114,16 +144,19 @@ export default function PropertyDetailsPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigator.share?.({ title: estate.opis })}
-                className="p-2 rounded-full hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                <Share2 className="w-5 h-5 text-gray-600" />
+                <Share2 className="w-5 h-5 text-black dark:text-white" />
               </button>
               <button
                 onClick={handleLike}
-                className="p-2 rounded-full hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <Heart
-                  className={`w-5 h-5 ${isLiked ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+                  className={`w-5 h-5 ${isLiked
+                      ? "fill-red-500 text-red-500"
+                      : "text-black dark:text-white"
+                    }`}
                 />
               </button>
             </div>
@@ -132,30 +165,44 @@ export default function PropertyDetailsPage() {
       </div>
 
       {/* Gallery */}
-      <div className="relative bg-black">
+      <div className="relative bg-gray-900 dark:bg-black">
         <div className="max-w-7xl mx-auto">
-          <div className="relative h-[500px] md:h-[600px]">
-            <img
-              src={images[currentImageIndex]}
-              alt={estate.opis}
-              className="w-full h-full object-cover"
-            />
+          <div className="relative h-[500px] md:h-[600px] bg-gray-200 dark:bg-gray-800">
+            {images.length > 0 && images[currentImageIndex] ? (
+              <img
+                src={images[currentImageIndex]}
+                alt={estate.opis}
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=800&fit=crop";
+                }}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
+                <Square className="w-20 h-20 text-gray-400 dark:text-gray-600" />
+              </div>
+            )}
 
-            <button
-              onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 p-3 rounded-full shadow-lg hover:bg-white"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 p-3 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-800"
+                >
+                  <ChevronLeft className="w-6 h-6 text-black dark:text-white" />
+                </button>
 
-            <button
-              onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 p-3 rounded-full shadow-lg hover:bg-white"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 p-3 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-800"
+                >
+                  <ChevronRight className="w-6 h-6 text-black dark:text-white" />
+                </button>
+              </>
+            )}
 
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 dark:bg-white/70 text-white dark:text-black px-4 py-2 rounded-full">
               {currentImageIndex + 1} / {images.length}
             </div>
           </div>
@@ -168,26 +215,25 @@ export default function PropertyDetailsPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Header */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 transition-colors">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <span
-                    className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-3 ${
-                      estate.status
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700"
-                    }`}
+                    className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-3 ${estate.status
+                        ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                        : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                      }`}
                   >
                     {estate.status ? "Sprzedane" : "Dostępne"}
                   </span>
 
-                  <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                  <h1 className="text-4xl font-bold text-black dark:text-white mb-4">
                     {Array.isArray(estate.type)
                       ? estate.type.join(", ")
                       : estate.type}
                   </h1>
 
-                  <div className="flex items-center text-gray-600 text-lg mb-6">
+                  <div className="flex items-center text-black dark:text-white text-lg mb-6">
                     <MapPin className="w-5 h-5 mr-2 text-blue-600" />
                     {estate.localization}
                   </div>
@@ -195,7 +241,7 @@ export default function PropertyDetailsPage() {
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                       <Square className="w-5 h-5 text-blue-600" />
-                      <span className="font-semibold text-black">
+                      <span className="font-semibold text-black dark:text-white">
                         {estate.surface} m²
                       </span>
                     </div>
@@ -206,7 +252,7 @@ export default function PropertyDetailsPage() {
                   <div className="text-4xl font-bold text-blue-600">
                     {estate.price.toLocaleString("pl-PL")} zł
                   </div>
-                  <div className="text-gray-500 mt-2">
+                  <div className="text-black dark:text-white mt-2">
                     {Math.round(estate.price / estate.surface)} zł/m²
                   </div>
                 </div>
@@ -214,40 +260,46 @@ export default function PropertyDetailsPage() {
             </div>
 
             {/* Description */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Opis</h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 transition-colors">
+              <h2 className="text-2xl font-bold text-black dark:text-white mb-6">
+                Opis
+              </h2>
+              <p className="text-black dark:text-white leading-relaxed whitespace-pre-line">
                 {estate.opis}
               </p>
             </div>
 
             {/* Details */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 transition-colors">
+              <h2 className="text-2xl font-bold text-black dark:text-white mb-6">
                 Szczegóły
               </h2>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex justify-between py-3 border-b">
-                  <span className="text-gray-600">Powierzchnia</span>
-                  <span className="font-semibold text-black">
+                <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-black dark:text-white">
+                    Powierzchnia
+                  </span>
+                  <span className="font-semibold text-black dark:text-white">
                     {estate.surface} m²
                   </span>
                 </div>
-                <div className="flex justify-between py-3 border-b">
-                  <span className="text-gray-600">Cena</span>
-                  <span className="font-semibold text-black">
+                <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-black dark:text-white">Cena</span>
+                  <span className="font-semibold text-black dark:text-white">
                     {estate.price.toLocaleString("pl-PL")} zł
                   </span>
                 </div>
-                <div className="flex justify-between py-3 border-b">
-                  <span className="text-gray-600">Lokalizacja</span>
-                  <span className="font-semibold text-black underline">
+                <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-black dark:text-white">
+                    Lokalizacja
+                  </span>
+                  <span className="font-semibold text-black dark:text-white underline">
                     {estate.localization}
                   </span>
                 </div>
-                <div className="flex justify-between py-3 border-b">
-                  <span className="text-gray-600">Typ</span>
-                  <span className="font-semibold text-black">
+                <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-black dark:text-white">Typ</span>
+                  <span className="font-semibold text-black dark:text-white">
                     {Array.isArray(estate.type)
                       ? estate.type.join(", ")
                       : estate.type}
@@ -261,23 +313,23 @@ export default function PropertyDetailsPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-32 space-y-6">
               {/* Contact Card */}
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h3 className="font-bold text-gray-900 mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-colors">
+                <h3 className="font-bold text-black dark:text-white mb-6">
                   Skontaktuj się z nami
                 </h3>
 
                 <div className="space-y-3">
                   <a
-                    href="tel:+48123456789"
+                    href="tel:+48505597504"
                     className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 font-semibold"
                   >
                     <Phone className="w-5 h-5" />
-                    +48 123 456 789
+                    +48 505 597 504
                   </a>
 
                   <button
                     onClick={() => setShowContactForm(!showContactForm)}
-                    className="w-full bg-gray-100 text-gray-900 py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 font-semibold"
+                    className="w-full bg-gray-100 dark:bg-gray-700 text-black dark:text-white py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all flex items-center justify-center gap-2 font-semibold"
                   >
                     <Mail className="w-5 h-5" />
                     Wyślij wiadomość
@@ -285,31 +337,59 @@ export default function PropertyDetailsPage() {
                 </div>
 
                 {showContactForm && (
-                  <div className="mt-6 pt-6 border-t space-y-4">
+                  <form
+                    action="mailto:marek@nieruchomosciistebna.pl"
+                    method="POST"
+                    encType="text/plain"
+                    className="space-y-3 mt-4"
+                  >
                     <input
                       type="text"
+                      name="Imię i nazwisko"
                       placeholder="Imię i nazwisko"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white"
                     />
+
                     <input
                       type="email"
+                      name="Email"
                       placeholder="Email"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white"
                     />
+
                     <textarea
                       rows={3}
+                      name="Wiadomość"
                       placeholder="Wiadomość"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none resize-none"
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none resize-none text-black dark:text-white"
                     />
-                    <button className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-semibold">
+
+                    <button
+                      type="submit"
+                      className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-semibold"
+                    >
                       Wyślij zapytanie
                     </button>
-                  </div>
+                  </form>
                 )}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Recommendations */}
+        {recommendations.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-3xl font-bold text-black dark:text-white mb-8">
+              Podobne <span className="text-blue-600">nieruchomości</span>
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {recommendations.map((rec) => (
+                <PropertyCard key={rec.id} estate={rec} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

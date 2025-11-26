@@ -64,8 +64,8 @@ func AdminMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Sprawdź czy użytkownik to admin (name, lastname i email muszą być "admin")
-		if user.Name != "admin" || user.Lastname != "admin" || user.Email != "admin" {
+		// Sprawdź czy użytkownik to admin (email musi być "admin@admin.com")
+		if user.Email != "admin@admin.com" {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
 			c.Abort()
 			return

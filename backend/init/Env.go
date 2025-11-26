@@ -11,9 +11,11 @@ import (
 )
 
 func GetEnv() {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	// Spróbuj załadować z różnych lokalizacji
+	if err := godotenv.Load("../.env"); err != nil {
+		if err := godotenv.Load(".env"); err != nil {
+			log.Println("No .env file found, using system environment variables")
+		}
 	}
 }
 
