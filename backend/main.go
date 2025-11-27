@@ -63,6 +63,7 @@ func main() {
 		admin.POST("/estates", handlers.CreateEstate)       // adding estate
 		admin.PUT("/estates/:id", handlers.UpdateEstate)    // changing estate
 		admin.DELETE("/estates/:id", handlers.DeleteEstate) // deleting estate
+		admin.GET("/debug/images", handlers.SyncImagesDebug)
 	}
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
@@ -70,5 +71,5 @@ func main() {
 	})
 
 	// Server will listen on 0.0.0.0:8080
-	r.Run()
+	r.Run("0.0.0.0:8010")
 }

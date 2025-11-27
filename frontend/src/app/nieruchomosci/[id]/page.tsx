@@ -15,20 +15,13 @@ import {
   Heart,
   Share2,
   ArrowLeft,
-  Calendar,
-  Mountain,
-  Trees,
-  Car,
-  Zap,
-  Droplets,
-  Wind,
-  CheckCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import PropertyCard from "@/components/PropertyCard";
 import { useFavourites } from "@/contexts/FavouritesContext";
+import Image from "next/image";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010/api";
 
 export default function PropertyDetailsPage() {
   const params = useParams();
@@ -119,8 +112,8 @@ export default function PropertyDetailsPage() {
     Array.isArray(estate.images) && estate.images.length > 0
       ? estate.images.map(getImageUrl)
       : [
-        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=800&fit=crop",
-      ];
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=800&fit=crop",
+        ];
 
   const nextImage = () =>
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -130,8 +123,8 @@ export default function PropertyDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-20 z-40 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="bg-white dark:bg-gray-800 shadow-sm sticky  top-20 z-40 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 ">
           <div className="flex items-center justify-between">
             <button
               onClick={() => router.back()}
@@ -153,10 +146,11 @@ export default function PropertyDetailsPage() {
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <Heart
-                  className={`w-5 h-5 ${isLiked
+                  className={`w-5 h-5 ${
+                    isLiked
                       ? "fill-red-500 text-red-500"
                       : "text-black dark:text-white"
-                    }`}
+                  }`}
                 />
               </button>
             </div>
@@ -165,18 +159,21 @@ export default function PropertyDetailsPage() {
       </div>
 
       {/* Gallery */}
-      <div className="relative bg-gray-900 dark:bg-black">
+      <div className="relative bg-gray-100 dark:bg-gray-900 ">
         <div className="max-w-7xl mx-auto">
-          <div className="relative h-[500px] md:h-[600px] bg-gray-200 dark:bg-gray-800">
+          <div className="relative  mt-20 h-[500px] md:h-[600px] rounded-b-lg rounded-bl-lg bg-gray-200 dark:bg-gray-800">
             {images.length > 0 && images[currentImageIndex] ? (
-              <img
+              <Image
                 src={images[currentImageIndex]}
                 alt={estate.opis}
+                fill
                 onError={(e) => {
                   e.currentTarget.src =
                     "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=800&fit=crop";
                 }}
-                className="w-full h-full object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="w-full h-full object-contain"
+                priority={false}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
@@ -188,14 +185,14 @@ export default function PropertyDetailsPage() {
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 p-3 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-800"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-900/90 p-3 rounded-full shadow-lg hover:bg-gray-200 dark:hover:bg-gray-950"
                 >
                   <ChevronLeft className="w-6 h-6 text-black dark:text-white" />
                 </button>
 
                 <button
                   onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 p-3 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-800"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-900/90 p-3 rounded-full shadow-lg hover:bg-gray-200  dark:hover:bg-gray-950"
                 >
                   <ChevronRight className="w-6 h-6 text-black dark:text-white" />
                 </button>
@@ -219,10 +216,11 @@ export default function PropertyDetailsPage() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <span
-                    className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-3 ${estate.status
+                    className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-3 ${
+                      estate.status
                         ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                         : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                      }`}
+                    }`}
                   >
                     {estate.status ? "Sprzedane" : "Dostępne"}
                   </span>
@@ -264,7 +262,7 @@ export default function PropertyDetailsPage() {
               <h2 className="text-2xl font-bold text-black dark:text-white mb-6">
                 Opis
               </h2>
-              <p className="text-black dark:text-white leading-relaxed whitespace-pre-line">
+              <p className="text-black dark:text-white leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">
                 {estate.opis}
               </p>
             </div>

@@ -50,12 +50,6 @@ func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
 
-		// Jeśli ID = 0, traktujemy jako konto admina
-		if userID == 0 {
-			c.Next()
-			return
-		}
-
 		// Pobierz użytkownika z bazy danych
 		var user models.User
 		if err := config.DB.First(&user, userID).Error; err != nil {
@@ -66,11 +60,12 @@ func AdminMiddleware() gin.HandlerFunc {
 
 		// Sprawdź czy użytkownik to admin (email musi być "admin@admin.com")
 		if user.Email != "admin@admin.com" {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 			c.Abort()
 			return
 		}
 
+		// Jeśli admin, kontynuuj
 		c.Next()
 	}
 }

@@ -279,9 +279,6 @@ export default function AdminPage() {
               {editingEstate ? "Edytuj" : "Dodaj"} nieruchomość
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* ... cały formularz dokładnie taki sam jak miałeś wcześniej ... */}
-              {/* (nie zmieniam go, bo działa dobrze – wklejam tylko skróconą wersję dla czytelności) */}
-
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-black dark:text-white font-semibold mb-2">
@@ -570,11 +567,10 @@ export default function AdminPage() {
                         </td>
                         <td className="py-4 px-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                              estate.status
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${estate.status
                                 ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                                 : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                            }`}
+                              }`}
                           >
                             {estate.status ? "Sprzedane" : "Dostępne"}
                           </span>

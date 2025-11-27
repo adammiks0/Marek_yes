@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
         pathname: "/uploads/**",
       },
       {
+        protocol: "http",
+        hostname: "backend",
+        port: "8010",
+        pathname: "/uploads/**",
+      },
+
+      {
         protocol: "https",
         hostname: "**", // Wszystkie hosty HTTPS
       },
@@ -25,6 +32,7 @@ const nextConfig: NextConfig = {
         hostname: "**", // Wszystkie hosty HTTP
       },
     ],
+    unoptimized: true, // Zezwala na wszystkie zdalne obrazy
   },
 };
 

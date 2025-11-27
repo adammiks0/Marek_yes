@@ -8,6 +8,7 @@ import { AuthService } from "@/lib/auth";
 import Link from "next/link";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import { error } from "console";
 
 // Validation helpers
 const validateEmail = (email: string): boolean => {
@@ -20,7 +21,9 @@ const validatePassword = (password: string): boolean => {
 };
 
 const validateName = (name: string): boolean => {
-  return name.trim().length >= 2 && /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]+$/.test(name);
+  return (
+    name.trim().length >= 2 && /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]+$/.test(name)
+  );
 };
 
 export default function LoginPage() {
@@ -146,7 +149,7 @@ export default function LoginPage() {
     try {
       const response = await ApiClient.login(
         loginData.email,
-        loginData.password
+        loginData.password,
       );
 
       if (response.token) {
@@ -160,7 +163,9 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       const errorMsg =
-        error?.response?.data?.error || "Błąd logowania. Sprawdź email i hasło.";
+        error?.response?.data?.error ||
+        "Błąd logowania. Sprawdź email i hasło.";
+      console.log("error: %d", error);
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -218,21 +223,19 @@ export default function LoginPage() {
           <div className="flex gap-2 mb-8 bg-gray-100 dark:bg-gray-700 p-2 rounded-xl">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-                isLogin
+              className={`flex-1 py-3 rounded-lg font-semibold transition-all ${isLogin
                   ? "bg-blue-600 text-white shadow-lg"
                   : "text-black dark:text-white"
-              }`}
+                }`}
             >
               Logowanie
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-                !isLogin
+              className={`flex-1 py-3 rounded-lg font-semibold transition-all ${!isLogin
                   ? "bg-blue-600 text-white shadow-lg"
                   : "text-black dark:text-white"
-              }`}
+                }`}
             >
               Rejestracja
             </button>
@@ -261,11 +264,10 @@ export default function LoginPage() {
                           setLoginErrors({ ...loginErrors, email: "" });
                         }
                       }}
-                      className={`w-full pl-12 pr-4 py-3 border-2 ${
-                        loginErrors.email
+                      className={`w-full pl-12 pr-4 py-3 border-2 ${loginErrors.email
                           ? "border-red-500"
                           : "border-gray-200 dark:border-gray-600"
-                      } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
+                        } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
                       placeholder="twoj@email.com"
                       required
                     />
@@ -295,11 +297,10 @@ export default function LoginPage() {
                           setLoginErrors({ ...loginErrors, password: "" });
                         }
                       }}
-                      className={`w-full pl-12 pr-12 py-3 border-2 ${
-                        loginErrors.password
+                      className={`w-full pl-12 pr-12 py-3 border-2 ${loginErrors.password
                           ? "border-red-500"
                           : "border-gray-200 dark:border-gray-600"
-                      } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
+                        } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
                       placeholder="••••••••"
                       required
                     />
@@ -359,11 +360,10 @@ export default function LoginPage() {
                           });
                         }
                       }}
-                      className={`w-full px-4 py-3 border-2 ${
-                        registerErrors.name
+                      className={`w-full px-4 py-3 border-2 ${registerErrors.name
                           ? "border-red-500"
                           : "border-gray-200 dark:border-gray-600"
-                      } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
+                        } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
                       placeholder="Jan"
                       required
                     />
@@ -393,11 +393,10 @@ export default function LoginPage() {
                           });
                         }
                       }}
-                      className={`w-full px-4 py-3 border-2 ${
-                        registerErrors.lastname
+                      className={`w-full px-4 py-3 border-2 ${registerErrors.lastname
                           ? "border-red-500"
                           : "border-gray-200 dark:border-gray-600"
-                      } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
+                        } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
                       placeholder="Kowalski"
                       required
                     />
@@ -430,11 +429,10 @@ export default function LoginPage() {
                           });
                         }
                       }}
-                      className={`w-full pl-12 pr-4 py-3 border-2 ${
-                        registerErrors.email
+                      className={`w-full pl-12 pr-4 py-3 border-2 ${registerErrors.email
                           ? "border-red-500"
                           : "border-gray-200 dark:border-gray-600"
-                      } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
+                        } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
                       placeholder="twoj@email.com"
                       required
                     />
@@ -467,11 +465,10 @@ export default function LoginPage() {
                           });
                         }
                       }}
-                      className={`w-full pl-12 pr-12 py-3 border-2 ${
-                        registerErrors.password
+                      className={`w-full pl-12 pr-12 py-3 border-2 ${registerErrors.password
                           ? "border-red-500"
                           : "border-gray-200 dark:border-gray-600"
-                      } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
+                        } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
                       placeholder="••••••••"
                       required
                     />
@@ -513,11 +510,10 @@ export default function LoginPage() {
                         });
                       }
                     }}
-                    className={`w-full px-4 py-3 border-2 ${
-                      registerErrors.confirmPassword
+                    className={`w-full px-4 py-3 border-2 ${registerErrors.confirmPassword
                         ? "border-red-500"
                         : "border-gray-200 dark:border-gray-600"
-                    } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
+                      } bg-white dark:bg-gray-700 rounded-xl focus:border-blue-500 focus:outline-none text-black dark:text-white`}
                     placeholder="••••••••"
                     required
                   />

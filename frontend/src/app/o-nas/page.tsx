@@ -3,7 +3,7 @@ import { Users, Award, TrendingUp, MapPin, Phone, Mail } from "lucide-react";
 
 export default function ONasPage() {
   return (
-    <div className="pt-32 pb-20 min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors">
+    <div className="pt-32 pb-20 min-h-screen bg-gradient-to-br from-gray-300 via-white to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-blue-900 dark:text-blue-300 mb-6">

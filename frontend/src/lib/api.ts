@@ -1,7 +1,7 @@
 // ============= 2. API CLIENT (lib/api.ts) =============
 import { Estate, User, AuthResponse } from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010/api";
 
 export class ApiClient {
   private static getHeaders(includeAuth = false): HeadersInit {

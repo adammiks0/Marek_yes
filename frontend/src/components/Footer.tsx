@@ -126,7 +126,7 @@ export default function Footer() {
             <ul className="space-y-3 text-gray-400">
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <p className="text-black dark:text-white">
+                <p className="text-gray-300 dark:text-white">
                   <a href="tel:+48505597504" className="underline">
                     +48 505 597 504
                   </a>
@@ -136,14 +136,14 @@ export default function Footer() {
                 <Mail className="w-4 h-4" />
                 <a
                   href="mailto:marek@nieruchomosciistebna.pl"
-                  className="underline dark:text-white text-black"
+                  className="underline dark:text-white text-gray-300"
                 >
                   marek@nieruchomosciistebna.pl
                 </a>
               </li>
               <li className="flex items-center gap-2 ">
                 <MapPin className="w-4 h-4" />
-                <p className="dark:text-white text-black">Jaworzynka 1010</p>
+                <p className="dark:text-white text-gray-300">Jaworzynka 1010</p>
               </li>
             </ul>
           </div>

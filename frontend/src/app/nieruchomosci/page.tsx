@@ -1,4 +1,6 @@
 // ============= 8. LISTA NIERUCHOMOŚCI (app/nieruchomosci/page.tsx) =============
+//     unoptimized: true, // Zezwala na wszystkie zdalne obrazy
+
 "use client";
 
 import { useState, useEffect } from "react";

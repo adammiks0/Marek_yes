@@ -27,13 +27,14 @@ services:
     env_file:
       - .env
     ports:
-      - "${PORT}:8080"
+      - "8010:8010"
     depends_on:
       - postgres
     networks:
       - app-network
-
-  # Frontend (Next.js)
+    volumes:
+      - ./uploads:/app/uploads # Mapuj katalog uploads
+    # Frontend (Next.js)
   frontend:
     build:
       context: ./frontend

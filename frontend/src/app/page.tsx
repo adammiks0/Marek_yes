@@ -49,12 +49,16 @@ export default async function HomePage() {
               <div className="text-black dark:text-white">Nieruchomości</div>
             </div>
             <div className="p-6">
-              <div className="text-4xl font-bold text-blue-600 mb-2">15+</div>
-              <div className="text-black dark:text-white">Lat doświadczenia</div>
+              <div className="text-4xl font-bold text-blue-600 mb-2">10+</div>
+              <div className="text-black dark:text-white">
+                Lat doświadczenia
+              </div>
             </div>
             <div className="p-6">
-              <div className="text-4xl font-bold text-blue-600 mb-2">500+</div>
-              <div className="text-black dark:text-white">Zadowolonych klientów</div>
+              <div className="text-4xl font-bold text-blue-600 mb-2">50+</div>
+              <div className="text-black dark:text-white">
+                Zadowolonych klientów
+              </div>
             </div>
           </div>
         </div>

@@ -9,8 +9,9 @@ import { ApiClient } from "@/lib/api";
 import { AuthService } from "@/lib/auth";
 import { useFavourites } from "@/contexts/FavouritesContext";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8010/api";
 
 export default function PropertyCard({ estate }: { estate: Estate }) {
   const [imageError, setImageError] = useState(false);
@@ -35,6 +36,8 @@ export default function PropertyCard({ estate }: { estate: Estate }) {
     Array.isArray(estate.images) && estate.images.length > 0
       ? getImageUrl(estate.images[0])
       : "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop";
+  console.log("Image URL:", firstImage);
+  console.log("Raw image from API:", estate.images[0]);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -65,11 +68,14 @@ export default function PropertyCard({ estate }: { estate: Estate }) {
       <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
         <div className="relative h-64 overflow-hidden group bg-gray-200 dark:bg-gray-700">
           {!imageError && firstImage ? (
-            <img
+            <Image
               src={firstImage}
-              alt={estate.opis}
+              alt={estate.opis || "Nieruchomość"}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
               onError={() => setImageError(true)}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              priority={false}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
@@ -82,11 +88,10 @@ export default function PropertyCard({ estate }: { estate: Estate }) {
             className="absolute top-4 right-4 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg hover:scale-110 transition-transform z-10"
           >
             <Heart
-              className={`w-5 h-5 ${
-                isLiked
+              className={`w-5 h-5 ${isLiked
                   ? "fill-red-500 text-red-500"
                   : "text-gray-600 dark:text-gray-400"
-              }`}
+                }`}
             />
           </button>
 
@@ -96,19 +101,31 @@ export default function PropertyCard({ estate }: { estate: Estate }) {
         </div>
 
         <div className="p-6">
-          <div className="flex items-center text-black dark:text-white text-sm mb-3">
-            <MapPin className="w-4 h-4 mr-1 text-blue-600" />
-            {estate.localization}
-          </div>
+          <div className="flex items-center justify-between  text-black dark:text-white text-sm mb-3">
+            {/* Lewa strona: lokalizacja */}
+            <div className="flex items-center">
+              <MapPin className="w-4 h-4 mr-1 text-blue-600" />
+              {estate.localization}
+            </div>
 
-          <p className="text-black dark:text-white mb-4 line-clamp-2">
+            {/* Prawa strona: status */}
+            <span
+              className={`inline-block px-4 py-1 rounded-full text-sm font-semibold ${estate.status
+                  ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                  : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                }`}
+            >
+              {estate.status ? "Sprzedane" : "Dostępne"}
+            </span>
+          </div>
+          <p className="text-black dark:text-white mb-4 line-clamp-1 break-words">
             {estate.opis}
           </p>
 
           <div className="flex items-center gap-4 text-black dark:text-white mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-1">
               <Square className="w-4 h-4 text-blue-600" />
-              <span className="text-sm">{estate.surface} m²</span>
+              <span className="text-sm">{estate.surface} m² </span>
             </div>
             <div className="text-sm">
               {Array.isArray(estate.type)
