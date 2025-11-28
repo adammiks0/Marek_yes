@@ -15,6 +15,8 @@ import {
   Heart,
   Share2,
   ArrowLeft,
+  Bath,
+  BedDouble,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import PropertyCard from "@/components/PropertyCard";
@@ -112,8 +114,8 @@ export default function PropertyDetailsPage() {
     Array.isArray(estate.images) && estate.images.length > 0
       ? estate.images.map(getImageUrl)
       : [
-          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=800&fit=crop",
-        ];
+        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&h=800&fit=crop",
+      ];
 
   const nextImage = () =>
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -146,11 +148,10 @@ export default function PropertyDetailsPage() {
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <Heart
-                  className={`w-5 h-5 ${
-                    isLiked
+                  className={`w-5 h-5 ${isLiked
                       ? "fill-red-500 text-red-500"
                       : "text-black dark:text-white"
-                  }`}
+                    }`}
                 />
               </button>
             </div>
@@ -207,53 +208,62 @@ export default function PropertyDetailsPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4   sm:px-6 lg:px-8 py-8">
+        <div className="grid lg:grid-cols-3 gap-8 ">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 w-[90vw] sm:w-full ">
             {/* Header */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 transition-colors">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <span
-                    className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-3 ${
-                      estate.status
+                    className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-3 ${estate.status
                         ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                         : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                    }`}
+                      }`}
                   >
                     {estate.status ? "Sprzedane" : "Dostępne"}
                   </span>
 
-                  <h1 className="text-4xl font-bold text-black dark:text-white mb-4">
-                    {Array.isArray(estate.type)
-                      ? estate.type.join(", ")
-                      : estate.type}
+                  <h1 className="text-4xl font-bold text-blue-200 dark:text-blue-600 mb-4">
+                    {estate.price.toLocaleString("pl-PL")} zł
                   </h1>
+                  <h5 className="text-2xl font-bold text-black dark:text-white mb-4">
+                    {" "}
+                    {Math.round(estate.price / estate.surface)} zl/m²
+                  </h5>
 
-                  <div className="flex items-center text-black dark:text-white text-lg mb-6">
-                    <MapPin className="w-5 h-5 mr-2 text-blue-600" />
-                    {estate.localization}
+                  <div className="flex items-center justify-between text-black dark:text-white text-lg mb-6">
+                    <div className="flex items-center">
+                      <MapPin className="w-5 h-5 mr-2 text-blue-600" />
+                      {estate.localization}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <BedDouble className="w-5 h-5 text-blue-600" />
+                      <span className="font-semibold">{estate.rooms}</span>
+                    </div>
                   </div>
-
-                  <div className="flex items-center gap-6">
+                  <div className="flex items- justify-between text-black dark:text-white text-lg">
                     <div className="flex items-center gap-2">
                       <Square className="w-5 h-5 text-blue-600" />
-                      <span className="font-semibold text-black dark:text-white">
-                        {estate.surface} m²
-                      </span>
+                      <span className="font-semibold">{estate.surface} m²</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Bath className="w-5 h-5 text-blue-600" />
+                      <span className="font-semibold">{estate.baths}</span>
                     </div>
                   </div>
                 </div>
-
-                <div className="text-right">
-                  <div className="text-4xl font-bold text-blue-600">
+                {/*
+                <div className="sm:text-right">
+                  <div className="sm:text-4xl text-xs font-bold text-blue-600">
                     {estate.price.toLocaleString("pl-PL")} zł
                   </div>
                   <div className="text-black dark:text-white mt-2">
-                    {Math.round(estate.price / estate.surface)} zł/m²
+                    {Math.round(estate.price / estate.surface)} zl/m²
                   </div>
                 </div>
+              */}
               </div>
             </div>
 
@@ -267,7 +277,6 @@ export default function PropertyDetailsPage() {
               </p>
             </div>
 
-            {/* Details */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 transition-colors">
               <h2 className="text-2xl font-bold text-black dark:text-white mb-6">
                 Szczegóły
@@ -296,10 +305,45 @@ export default function PropertyDetailsPage() {
                   </span>
                 </div>
                 <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                  <span className="text-black dark:text-white">Typ</span>
+                  <span className="text-black dark:text-white">
+                    Ilosc pokoji
+                  </span>
+                  <span className="font-semibold text-black dark:text-white ">
+                    <div className="flex items-center gap-2">
+                      <BedDouble className="w-5 h-5 text-blue-600" />
+                      <span className="font-semibold">{estate.rooms}</span>
+                    </div>
+                  </span>
+                </div>
+
+                <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-black dark:text-white">
+                    Ilosc lazienek
+                  </span>
+                  <span className="font-semibold text-black dark:text-white ">
+                    <div className="flex items-center gap-2">
+                      <Bath className="w-5 h-5 text-blue-600" />
+                      <span className="font-semibold">{estate.baths}</span>
+                    </div>
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-black dark:text-white">
+                    Rok wybudowania
+                  </span>
+                  <span className="font-semibold text-black  underline dark:text-white ">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{estate.year}</span>
+                    </div>
+                  </span>
+                </div>
+
+                <div className="flex justify-between  py-3 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-black dark:text-white">Typ </span>
                   <span className="font-semibold text-black dark:text-white">
+                    :
                     {Array.isArray(estate.type)
-                      ? estate.type.join(", ")
+                      ? estate.type.join(" , ")
                       : estate.type}
                   </span>
                 </div>

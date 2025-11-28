@@ -1,6 +1,3 @@
-// ============= 8. LISTA NIERUCHOMOŚCI (app/nieruchomosci/page.tsx) =============
-//     unoptimized: true, // Zezwala na wszystkie zdalne obrazy
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -45,15 +42,24 @@ export default function NieruchomosciPage() {
   const [surfaceMin, setSurfaceMin] = useState("");
   const [surfaceMax, setSurfaceMax] = useState("");
   const [type, setType] = useState("");
+  const [roomsMin, setRoomsMin] = useState("");
+  const [roomsMax, setRoomsMax] = useState("");
+  const [year, setYear] = useState("");
+  const [bathsMin, setBathsMin] = useState("");
+  const [bathsMax, setBathsMax] = useState("");
 
   // Get min/max values for sliders
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
   const [surfaceRange, setSurfaceRange] = useState({ min: 0, max: 10000 });
+  const [roomsRange, setRoomsRange] = useState({ min: 0, max: 10 });
+  const [bathsRange, setBathsRange] = useState({ min: 0, max: 10 });
+  const [years, setYears] = useState<number[]>([]);
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
   // Calculate pagination
   const totalPages = Math.ceil(filteredEstates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -75,6 +81,13 @@ export default function NieruchomosciPage() {
       if (data.length > 0) {
         const prices = data.map((e) => e.price);
         const surfaces = data.map((e) => e.surface);
+        const rooms = data
+          .map((e) => e.rooms)
+          .filter((r): r is number => r !== undefined && r !== null);
+        const baths = data
+          .map((e) => e.baths)
+          .filter((b): b is number => b !== undefined && b !== null);
+
         setPriceRange({
           min: Math.min(...prices),
           max: Math.max(...prices),
@@ -83,6 +96,30 @@ export default function NieruchomosciPage() {
           min: Math.min(...surfaces),
           max: Math.max(...surfaces),
         });
+
+        if (rooms.length > 0) {
+          setRoomsRange({
+            min: Math.min(...rooms),
+            max: Math.max(...rooms),
+          });
+        }
+
+        if (baths.length > 0) {
+          setBathsRange({
+            min: Math.min(...baths),
+            max: Math.max(...baths),
+          });
+        }
+
+        const yearsArray = Array.from(
+          new Set(
+            data
+              .map((e) => e.year)
+              .filter((y): y is number => y !== undefined && y !== null),
+          ),
+        ).sort((a, b) => b - a);
+
+        setYears(yearsArray);
       }
     } catch (error) {
       toast.error("Błąd ładowania nieruchomości");
@@ -102,6 +139,11 @@ export default function NieruchomosciPage() {
       if (priceMax) params.price_max = parseInt(priceMax);
       if (surfaceMin) params.surface_min = parseInt(surfaceMin);
       if (surfaceMax) params.surface_max = parseInt(surfaceMax);
+      if (roomsMin) params.rooms_min = parseInt(roomsMin);
+      if (roomsMax) params.rooms_max = parseInt(roomsMax);
+      if (year) params.year = parseInt(year);
+      if (bathsMin) params.baths_min = parseInt(bathsMin);
+      if (bathsMax) params.baths_max = parseInt(bathsMax);
       if (type) params.type = type;
 
       const results = await ApiClient.searchEstates(params);
@@ -144,11 +186,26 @@ export default function NieruchomosciPage() {
     setType("");
     setSearchQuery("");
     setCurrentPage(1);
+    setRoomsMin("");
+    setRoomsMax("");
+    setYear("");
+    setBathsMin("");
+    setBathsMax("");
     loadEstates();
   };
 
   const hasActiveFilters =
-    localization || priceMin || priceMax || surfaceMin || surfaceMax || type;
+    localization ||
+    priceMin ||
+    priceMax ||
+    surfaceMin ||
+    surfaceMax ||
+    type ||
+    roomsMin ||
+    roomsMax ||
+    year ||
+    bathsMin ||
+    bathsMax;
 
   return (
     <div className="pt-32 pb-20 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -160,33 +217,48 @@ export default function NieruchomosciPage() {
         {/* Search Bar */}
         <div className="mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-            <div className="flex gap-4 mb-4">
-              <input
-                type="text"
-                placeholder="Szukaj po lokalizacji lub opisie..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
-              />
-              <button
-                onClick={handleSearch}
-                className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold"
-              >
-                <Search className="w-5 h-5" />
-              </button>
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  placeholder="Szukaj po lokalizacji lub opisie..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                  className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                />
+                <button
+                  onClick={handleSearch}
+                  className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`hidden md:flex px-6 py-3 rounded-xl transition-all font-semibold items-center gap-2 ${
+                    showFilters || hasActiveFilters
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
+                  }`}
+                >
+                  <Filter className="w-5 h-5" />
+                  Filtry
+                </button>
+              </div>
+
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`px-6 py-3 rounded-xl transition-all font-semibold flex items-center gap-2 ${showFilters || hasActiveFilters
+                className={`md:hidden w-full px-6 py-3 rounded-xl transition-all font-semibold flex items-center justify-center gap-2 ${
+                  showFilters || hasActiveFilters
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
-                  }`}
+                }`}
               >
                 <Filter className="w-5 h-5" />
                 Filtry
               </button>
             </div>
-
             {/* Filters Panel */}
             {showFilters && (
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6 space-y-6">
@@ -380,6 +452,173 @@ export default function NieruchomosciPage() {
                       <span>{surfaceRange.max} m²</span>
                     </div>
                   </div>
+
+                  {/* Pokoje Min */}
+                  <div>
+                    <label className="block text-black dark:text-white font-semibold mb-2">
+                      Pokoje minimalna liczba
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={roomsRange.min}
+                        max={roomsRange.max}
+                        step="1"
+                        value={roomsMin || roomsRange.min}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? parseInt(e.target.value)
+                            : "";
+                          setRoomsMin(val.toString());
+                        }}
+                        className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                        placeholder="Min"
+                      />
+                    </div>
+                    <input
+                      type="range"
+                      min={roomsRange.min}
+                      max={roomsRange.max}
+                      step="1"
+                      value={roomsMin || roomsRange.min}
+                      onChange={(e) => setRoomsMin(e.target.value)}
+                      className="w-full mt-2"
+                    />
+                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <span>{roomsRange.min}</span>
+                      <span>{roomsRange.max}</span>
+                    </div>
+                  </div>
+
+                  {/* Pokoje Max */}
+                  <div>
+                    <label className="block text-black dark:text-white font-semibold mb-2">
+                      Pokoje maksymalna liczba
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={roomsRange.min}
+                        max={roomsRange.max}
+                        step="1"
+                        value={roomsMax || roomsRange.max}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? parseInt(e.target.value)
+                            : "";
+                          setRoomsMax(val.toString());
+                        }}
+                        className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                        placeholder="Max"
+                      />
+                    </div>
+                    <input
+                      type="range"
+                      min={roomsRange.min}
+                      max={roomsRange.max}
+                      step="1"
+                      value={roomsMax || roomsRange.max}
+                      onChange={(e) => setRoomsMax(e.target.value)}
+                      className="w-full mt-2"
+                    />
+                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <span>{roomsRange.min}</span>
+                      <span>{roomsRange.max}</span>
+                    </div>
+                  </div>
+
+                  {/* Łazienki Min */}
+                  <div>
+                    <label className="block text-black dark:text-white font-semibold mb-2">
+                      Łazienki minimalna liczba
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={bathsRange.min}
+                        max={bathsRange.max}
+                        step="1"
+                        value={bathsMin || bathsRange.min}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? parseInt(e.target.value)
+                            : "";
+                          setBathsMin(val.toString());
+                        }}
+                        className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                        placeholder="Min"
+                      />
+                    </div>
+                    <input
+                      type="range"
+                      min={bathsRange.min}
+                      max={bathsRange.max}
+                      step="1"
+                      value={bathsMin || bathsRange.min}
+                      onChange={(e) => setBathsMin(e.target.value)}
+                      className="w-full mt-2"
+                    />
+                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <span>{bathsRange.min}</span>
+                      <span>{bathsRange.max}</span>
+                    </div>
+                  </div>
+
+                  {/* Łazienki Max */}
+                  <div>
+                    <label className="block text-black dark:text-white font-semibold mb-2">
+                      Łazienki maksymalna liczba
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={bathsRange.min}
+                        max={bathsRange.max}
+                        step="1"
+                        value={bathsMax || bathsRange.max}
+                        onChange={(e) => {
+                          const val = e.target.value
+                            ? parseInt(e.target.value)
+                            : "";
+                          setBathsMax(val.toString());
+                        }}
+                        className="flex-1 px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                        placeholder="Max"
+                      />
+                    </div>
+                    <input
+                      type="range"
+                      min={bathsRange.min}
+                      max={bathsRange.max}
+                      step="1"
+                      value={bathsMax || bathsRange.max}
+                      onChange={(e) => setBathsMax(e.target.value)}
+                      className="w-full mt-2"
+                    />
+                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <span>{bathsRange.min}</span>
+                      <span>{bathsRange.max}</span>
+                    </div>
+                  </div>
+
+                  {/* Rok */}
+                  <div>
+                    <label className="block text-black dark:text-white font-semibold mb-2">
+                      Rok
+                    </label>
+                    <select
+                      value={year}
+                      onChange={(e) => setYear(e.target.value)}
+                      className="w-full px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="">Wszystkie lata</option>
+                      {years.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="flex gap-4">
@@ -424,7 +663,7 @@ export default function NieruchomosciPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+            <div className="grid md:grid-cols-2  lg:grid-cols-3  gap-8 mb-8">
               {currentEstates.map((estate) => (
                 <PropertyCard key={estate.id} estate={estate} />
               ))}
@@ -454,10 +693,11 @@ export default function NieruchomosciPage() {
                     <button
                       key={page}
                       onClick={() => goToPage(page)}
-                      className={`px-4 py-2 rounded-xl transition-all ${currentPage === page
+                      className={`px-4 py-2 rounded-xl transition-all ${
+                        currentPage === page
                           ? "bg-blue-600 text-white"
                           : "bg-white dark:bg-gray-800 text-black dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        }`}
+                      }`}
                     >
                       {page}
                     </button>

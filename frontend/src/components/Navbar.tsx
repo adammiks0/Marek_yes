@@ -138,7 +138,10 @@ export default function Navbar() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 py-4 border-t border-gray-200 dark:border-gray-700">
+          <div
+            className="md:hidden mt-4 py-4 border-t border-gray-200 dark:border-gray-700"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
             <Link
               href="/nieruchomosci"
               className="block py-2 text-black dark:text-white"

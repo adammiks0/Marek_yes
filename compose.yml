@@ -34,21 +34,6 @@ services:
       - app-network
     volumes:
       - ./uploads:/app/uploads # Mapuj katalog uploads
-    # Frontend (Next.js)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    networks:
-      - app-network
 
 volumes:
   postgres_data:

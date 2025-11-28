@@ -51,6 +51,12 @@ export class ApiClient {
     surface_max?: number;
     localization?: string;
     type?: string;
+    rooms_min?: number;
+    rooms_max?: number;
+    year?: number;
+    baths_min?: number;
+    baths_max?: number;
+
     status?: "available" | "sold";
   }): Promise<Estate[]> {
     const queryParams = new URLSearchParams();

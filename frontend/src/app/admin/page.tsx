@@ -43,6 +43,9 @@ export default function AdminPage() {
     surface: "",
     price: "",
     opis: "",
+    rooms: "",
+    year: "",
+    baths: "",
     images: [] as File[],
   });
 
@@ -88,6 +91,9 @@ export default function AdminPage() {
       surface: "",
       price: "",
       opis: "",
+      rooms: "",
+      year: "",
+      baths: "",
       images: [],
     });
     setEditingEstate(null);
@@ -157,6 +163,9 @@ export default function AdminPage() {
     form.append("surface", formData.surface);
     form.append("price", formData.price);
     form.append("opis", formData.opis);
+    form.append("rooms", formData.rooms);
+    form.append("year", formData.year);
+    form.append("baths", formData.baths);
     formData.images.forEach((img) => form.append("images", img));
 
     try {
@@ -207,6 +216,9 @@ export default function AdminPage() {
       localization: estate.localization,
       surface: estate.surface.toString(),
       price: estate.price.toString(),
+      rooms: estate.rooms.toString(),
+      year: estate.year.toString(),
+      baths: estate.toString(),
       opis: estate.opis,
       images: [],
     });
@@ -371,6 +383,56 @@ export default function AdminPage() {
                 </div>
               </div>
 
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-black dark:text-white font-semibold mb-2">
+                    Pokoje
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.rooms}
+                    onChange={(e) =>
+                      setFormData({ ...formData, rooms: e.target.value })
+                    }
+                    min="1"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl text-black dark:text-white focus:border-blue-500 focus:outline-none"
+                    placeholder="np. 2"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-black dark:text-white font-semibold mb-2">
+                    Łazienki
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.baths}
+                    onChange={(e) =>
+                      setFormData({ ...formData, baths: e.target.value })
+                    }
+                    min="1"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl text-black dark:text-white focus:border-blue-500 focus:outline-none"
+                    placeholder="np. 3"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-black dark:text-white font-semibold mb-2">
+                  Rok zbudowania*
+                </label>
+                <input
+                  type="number"
+                  value={formData.year}
+                  onChange={(e) =>
+                    setFormData({ ...formData, year: e.target.value })
+                  }
+                  required
+                  min="1"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl text-black dark:text-white focus:border-blue-500 focus:outline-none"
+                  placeholder="np. 2024"
+                />
+              </div>
               <div>
                 <label className="block text-black dark:text-white font-semibold mb-2">
                   Status
@@ -510,6 +572,17 @@ export default function AdminPage() {
                       Powierzchnia
                     </th>
                     <th className="text-left py-4 px-4 text-black dark:text-white font-semibold">
+                      Pokoje
+                    </th>
+                    <th className="text-left py-4 px-4 text-black dark:text-white font-semibold">
+                      Łazienki
+                    </th>
+
+                    <th className="text-left py-4 px-4 text-black dark:text-white font-semibold">
+                      Rok
+                    </th>
+
+                    <th className="text-left py-4 px-4 text-black dark:text-white font-semibold">
                       Cena
                     </th>
                     <th className="text-left py-4 px-4 text-black dark:text-white font-semibold">
@@ -562,15 +635,25 @@ export default function AdminPage() {
                         <td className="py-4 px-4 text-black dark:text-white">
                           {estate.surface} m²
                         </td>
+                        <td className="py-4 px-4 text-black dark:text-white">
+                          {estate.rooms}
+                        </td>
+                        <td className="py-4 px-4 text-black dark:text-white">
+                          {estate.baths}
+                        </td>
+                        <td className="py-4 px-4 text-black dark:text-white">
+                          {estate.year}
+                        </td>
                         <td className="py-4 px-4 text-black dark:text-white font-semibold">
                           {estate.price.toLocaleString("pl-PL")} zł
                         </td>
                         <td className="py-4 px-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${estate.status
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                              estate.status
                                 ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                                 : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                              }`}
+                            }`}
                           >
                             {estate.status ? "Sprzedane" : "Dostępne"}
                           </span>

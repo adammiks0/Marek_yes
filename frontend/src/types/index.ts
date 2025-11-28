@@ -7,6 +7,9 @@ export interface Estate {
   price: number;
   opis: string;
   images: string[];
+  rooms?: number;
+  year?: number;
+  baths?: number;
 }
 
 export interface User {

@@ -17,6 +17,9 @@ type Estate struct {
 	Price        int32          `json:"price"`
 	Opis         string         `json:"opis"`
 	Images       datatypes.JSON `json:"images" gorm:"type:json"`
+	Rooms        *int32         `json:"rooms"`
+	Year         *int32         `json:"year"`
+	Baths        *int32         `json:"baths"`
 }
 
 type User struct {
