@@ -225,7 +225,7 @@ export default function PropertyDetailsPage() {
                     {estate.status ? "Sprzedane" : "Dostępne"}
                   </span>
 
-                  <h1 className="text-4xl font-bold text-blue-200 dark:text-blue-600 mb-4">
+                  <h1 className="text-4xl font-bold text-blue-600 dark:text-blue-600 mb-4">
                     {estate.price.toLocaleString("pl-PL")} zł
                   </h1>
                   <h5 className="text-2xl font-bold text-black dark:text-white mb-4">
@@ -306,6 +306,17 @@ export default function PropertyDetailsPage() {
                 </div>
                 <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
                   <span className="text-black dark:text-white">
+                    Rok wybudowania
+                  </span>
+                  <span className="font-semibold text-black  underline dark:text-white ">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{estate.year}</span>
+                    </div>
+                  </span>
+                </div>
+
+                <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-black dark:text-white">
                     Ilosc pokoji
                   </span>
                   <span className="font-semibold text-black dark:text-white ">
@@ -327,26 +338,15 @@ export default function PropertyDetailsPage() {
                     </div>
                   </span>
                 </div>
-                <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                  <span className="text-black dark:text-white">
-                    Rok wybudowania
-                  </span>
-                  <span className="font-semibold text-black  underline dark:text-white ">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{estate.year}</span>
-                    </div>
-                  </span>
-                </div>
-
-                <div className="flex justify-between  py-3 border-b border-gray-200 dark:border-gray-700">
-                  <span className="text-black dark:text-white">Typ </span>
-                  <span className="font-semibold text-black dark:text-white">
-                    :
-                    {Array.isArray(estate.type)
-                      ? estate.type.join(" , ")
-                      : estate.type}
-                  </span>
-                </div>
+              </div>
+              <div className="flex justify-between  py-3 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-black dark:text-white">Typ </span>
+                <span className="font-semibold text-black dark:text-white">
+                  :
+                  {Array.isArray(estate.type)
+                    ? estate.type.join(" , ")
+                    : estate.type}
+                </span>
               </div>
             </div>
           </div>
