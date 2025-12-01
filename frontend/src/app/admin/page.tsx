@@ -216,9 +216,9 @@ export default function AdminPage() {
       localization: estate.localization,
       surface: estate.surface.toString(),
       price: estate.price.toString(),
-      rooms: estate.rooms.toString(),
-      year: estate.year.toString(),
-      baths: estate.toString(),
+      rooms: estate.rooms?.toString() || "",
+      year: estate.year?.toString() || "",
+      baths: estate.baths?.toString() || "",
       opis: estate.opis,
       images: [],
     });
@@ -649,11 +649,10 @@ export default function AdminPage() {
                         </td>
                         <td className="py-4 px-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                              estate.status
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${estate.status
                                 ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                                 : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                            }`}
+                              }`}
                           >
                             {estate.status ? "Sprzedane" : "Dostępne"}
                           </span>
