@@ -162,7 +162,7 @@ func saveUploadedFiles(c *gin.Context) ([]string, error) {
 			continue
 		}
 
-		if file.Size > 10*1024*1024 {
+		if file.Size > 20*1024*1024 {
 			continue
 		}
 

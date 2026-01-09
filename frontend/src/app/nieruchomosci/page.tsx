@@ -41,7 +41,7 @@ export default function NieruchomosciPage() {
   const [priceMax, setPriceMax] = useState("");
   const [surfaceMin, setSurfaceMin] = useState("");
   const [surfaceMax, setSurfaceMax] = useState("");
-  const [type, setType] = useState("");
+  const [type, setType] = useState<string[]>([]);
   const [roomsMin, setRoomsMin] = useState("");
   const [roomsMax, setRoomsMax] = useState("");
   const [year, setYear] = useState("");
@@ -60,6 +60,16 @@ export default function NieruchomosciPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Funkcja sortująca - niesprzedane najpierw
+  const sortEstatesByStatus = (estatesList: Estate[]): Estate[] => {
+    return [...estatesList].sort((a, b) => {
+      // status: false = dostępne, true = sprzedane
+      // Chcemy dostępne (false) na początku
+      if (a.status === b.status) return 0;
+      return a.status ? 1 : -1;
+    });
+  };
+
   // Calculate pagination
   const totalPages = Math.ceil(filteredEstates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -74,8 +84,9 @@ export default function NieruchomosciPage() {
     try {
       setLoading(true);
       const data = await ApiClient.getAllEstates();
-      setEstates(data);
-      setFilteredEstates(data);
+      const sortedData = sortEstatesByStatus(data);
+      setEstates(sortedData);
+      setFilteredEstates(sortedData);
 
       // Calculate ranges
       if (data.length > 0) {
@@ -144,7 +155,7 @@ export default function NieruchomosciPage() {
       if (year) params.year = parseInt(year);
       if (bathsMin) params.baths_min = parseInt(bathsMin);
       if (bathsMax) params.baths_max = parseInt(bathsMax);
-      if (type) params.type = type;
+      if (type.length > 0) params.type = type;
 
       const results = await ApiClient.searchEstates(params);
 
@@ -160,9 +171,12 @@ export default function NieruchomosciPage() {
         );
       }
 
-      setEstates(filtered);
-      setFilteredEstates(filtered);
-      setCurrentPage(1); // Reset to first page
+      // Sortuj wyniki - niesprzedane najpierw
+      const sortedFiltered = sortEstatesByStatus(filtered);
+
+      setEstates(sortedFiltered);
+      setFilteredEstates(sortedFiltered);
+      setCurrentPage(1);
 
       if (filtered.length === 0) {
         toast("Nie znaleziono nieruchomości spełniających kryteria", {
@@ -183,7 +197,7 @@ export default function NieruchomosciPage() {
     setPriceMax("");
     setSurfaceMin("");
     setSurfaceMax("");
-    setType("");
+    setType([]);
     setSearchQuery("");
     setCurrentPage(1);
     setRoomsMin("");
@@ -200,7 +214,7 @@ export default function NieruchomosciPage() {
     priceMax ||
     surfaceMin ||
     surfaceMax ||
-    type ||
+    type.length > 0 ||
     roomsMin ||
     roomsMax ||
     year ||
@@ -221,7 +235,7 @@ export default function NieruchomosciPage() {
               <div className="flex gap-4">
                 <input
                   type="text"
-                  placeholder="Szukaj po lokalizacji lub opisie..."
+                  placeholder="Szukaj po opisie."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -259,6 +273,7 @@ export default function NieruchomosciPage() {
                 Filtry
               </button>
             </div>
+
             {/* Filters Panel */}
             {showFilters && (
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6 space-y-6">
@@ -282,23 +297,40 @@ export default function NieruchomosciPage() {
                     </select>
                   </div>
 
-                  {/* Typ */}
+                  {/* Typ - Checkboxy */}
                   <div>
                     <label className="block text-black dark:text-white font-semibold mb-2">
                       Typ nieruchomości
                     </label>
-                    <select
-                      value={type}
-                      onChange={(e) => setType(e.target.value)}
-                      className="w-full px-4 py-3 border-2 text-black dark:text-white bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:outline-none"
-                    >
-                      <option value="">Wszystkie</option>
+                    <div className="space-y-2 p-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 max-h-48 overflow-y-auto">
                       {TYPES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
+                        <label
+                          key={t}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 p-2 rounded-lg transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={type.includes(t)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setType([...type, t]);
+                              } else {
+                                setType(type.filter((item) => item !== t));
+                              }
+                            }}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-black dark:text-white text-sm">
+                            {t}
+                          </span>
+                        </label>
                       ))}
-                    </select>
+                    </div>
+                    {type.length > 0 && (
+                      <p className="text-sm text-blue-600 mt-2">
+                        Wybrano: {type.length}
+                      </p>
+                    )}
                   </div>
 
                   {/* Cena Min */}
@@ -663,7 +695,7 @@ export default function NieruchomosciPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2  lg:grid-cols-3  gap-8 mb-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
               {currentEstates.map((estate) => (
                 <PropertyCard key={estate.id} estate={estate} />
               ))}

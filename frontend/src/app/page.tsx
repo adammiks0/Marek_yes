@@ -1,9 +1,17 @@
 // ============= 6. STRONA GŁÓWNA (app/page.tsx) =============
 import Link from "next/link";
 import { ApiClient } from "@/lib/api";
-import { Search, MapPin, TrendingUp, Users, Award } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  TrendingUp,
+  Users,
+  Award,
+  Fullscreen,
+} from "lucide-react";
 import PropertyCard from "@/components/PropertyCard";
 
+import Image from "next/image";
 export default async function HomePage() {
   const estates = await ApiClient.getAllEstates();
   const featuredEstates = estates.filter((e) => !e.status).slice(0, 12);
@@ -11,8 +19,22 @@ export default async function HomePage() {
   return (
     <div className="pt-20">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-20 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-20 transition-colors overflow-hidden">
+        {/* Zdjęcie jako tło */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/tle.jpg"
+            alt="Tło strony"
+            fill
+            priority
+            className="object-cover opacity-90 dark:opacity-70"
+          />
+          {/* Opcjonalne: gradient overlay dla lepszej czytelności tekstu */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-white/80 to-blue-50/80 dark:from-gray-900/80 dark:via-gray-800/80 dark:to-gray-900/80"></div>
+        </div>
+
+        {/* Zawartość */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-black dark:text-white mb-6">
             Znajdź swój <span className="text-blue-600">wymarzony dom</span>
           </h1>
@@ -20,7 +42,6 @@ export default async function HomePage() {
             Najlepsza oferta nieruchomości w Beskidach. Działki, domy i
             mieszkania w Istebnej, Koniakowie i okolicach.
           </p>
-
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/nieruchomosci"
@@ -63,7 +84,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Featured Properties */}
       <section className="py-20 bg-gray-50 dark:bg-gray-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

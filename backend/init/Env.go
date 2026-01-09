@@ -33,7 +33,7 @@ func ConnectDB() {
 		" password=" + password +
 		" dbname=" + dbname +
 		" port=" + port +
-		" sslmode=require TimeZone=UTC"
+		" sslmode=disable TimeZone=UTC"
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})

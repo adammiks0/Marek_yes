@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,6 +41,7 @@ func GetEstateByID(c *gin.Context) {
 }
 
 // SearchEstates - wyszukiwanie z filtrami
+
 func SearchEstates(c *gin.Context) {
 	query := config.DB.Model(&models.Estate{})
 
@@ -61,7 +63,6 @@ func SearchEstates(c *gin.Context) {
 			query = query.Where("rooms >= ?", min)
 		}
 	}
-
 	if roomsMax := c.Query("rooms_max"); roomsMax != "" {
 		if max, err := strconv.Atoi(roomsMax); err == nil {
 			query = query.Where("rooms <= ?", max)
@@ -74,18 +75,18 @@ func SearchEstates(c *gin.Context) {
 			query = query.Where("baths >= ?", min)
 		}
 	}
-
 	if bathsMax := c.Query("baths_max"); bathsMax != "" {
 		if max, err := strconv.Atoi(bathsMax); err == nil {
 			query = query.Where("baths <= ?", max)
 		}
 	}
 
-	// rok
+	// Rok
 	if year := c.Query("year"); year != "" {
 		query = query.Where("year = ?", year)
 	}
-	// Filtr powierzchni (min-max)
+
+	// Filtr powierzchni
 	if surfaceMin := c.Query("surface_min"); surfaceMin != "" {
 		if min, err := strconv.Atoi(surfaceMin); err == nil {
 			query = query.Where("surface >= ?", min)
@@ -97,18 +98,26 @@ func SearchEstates(c *gin.Context) {
 		}
 	}
 
-	// Filtr lokalizacji
+	// Lokalizacja
 	if localization := c.Query("localization"); localization != "" {
 		query = query.Where("localization = ?", localization)
 	}
 
-	// Filtr typu - POPRAWIONE: używamy LIKE zamiast @>
-	if typ := c.Query("type"); typ != "" {
-		// Szukamy czy typ jest w tablicy JSON
-		query = query.Where("typ::text LIKE ?", "%\""+typ+"\"%")
+	// 🔥 WIELE TYPÓW — type=house&type=flat&type=studio
+	types := c.QueryArray("type")
+	if len(types) > 0 {
+		var likeClauses []string
+		var params []interface{}
+
+		for _, t := range types {
+			likeClauses = append(likeClauses, "typ::text LIKE ?")
+			params = append(params, "%\""+t+"\"%")
+		}
+
+		query = query.Where(strings.Join(likeClauses, " OR "), params...)
 	}
 
-	// Filtr statusu (sprzedane/na sprzedaż)
+	// Status (sold / available)
 	if status := c.Query("status"); status != "" {
 		if status == "available" {
 			query = query.Where("status = ?", false)

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { DarkModeProvider } from "@/contexts/DarkModeContext";
 import { FavouritesProvider } from "@/contexts/FavouritesContext";
 import { Toaster } from "react-hot-toast";
+import CookieBanner from "@/components/Cookies";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
             <Navbar />
             <main className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
               {children}
+              <CookieBanner />
             </main>
             <Footer />
             <Toaster

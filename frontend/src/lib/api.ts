@@ -44,31 +44,55 @@ export class ApiClient {
     return data.recommendations || [];
   }
 
+  // search
+
   static async searchEstates(params: {
     price_min?: number;
     price_max?: number;
     surface_min?: number;
     surface_max?: number;
     localization?: string;
-    type?: string;
+    type?: string | string[];
     rooms_min?: number;
     rooms_max?: number;
     year?: number;
     baths_min?: number;
     baths_max?: number;
-
     status?: "available" | "sold";
   }): Promise<Estate[]> {
-    const queryParams = new URLSearchParams();
+    // Budujemy URL query string ręcznie
+    const queryParts: string[] = [];
+
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
-        queryParams.append(key, value.toString());
+      if (value === undefined || value === null) return;
+
+      // Specjalna obsługa dla type (może być tablicą)
+      if (key === "type") {
+        if (Array.isArray(value)) {
+          // Dla każdego typu dodajemy osobny parametr: type=dom&type=dzialka
+          value.forEach((v) => {
+            queryParts.push(`type=${encodeURIComponent(v)}`);
+          });
+        } else {
+          queryParts.push(`type=${encodeURIComponent(value)}`);
+        }
+        return;
       }
+
+      // Pozostałe parametry
+      queryParts.push(`${key}=${encodeURIComponent(String(value))}`);
     });
 
-    const res = await fetch(`${API_URL}/estates/search?${queryParams}`, {
+    const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+
+    const res = await fetch(`${API_URL}/estates/search${queryString}`, {
       cache: "no-store",
     });
+
+    if (!res.ok) {
+      throw new Error(`Search failed: ${res.status}`);
+    }
+
     const data = await res.json();
     return data.estates || [];
   }

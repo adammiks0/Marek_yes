@@ -118,13 +118,13 @@ export default function AdminPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
-    if (files.length > 10) {
-      toast.error("Maksymalnie 10 zdjęć na raz");
+    if (files.length > 20) {
+      toast.error("Maksymalnie 20 zdjęć na raz");
       return;
     }
 
     const validFiles = files.filter((file) => {
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > 20 * 1024 * 1024) {
         toast.error(`Plik ${file.name} jest za duży (max 10MB)`);
         return false;
       }
@@ -419,7 +419,7 @@ export default function AdminPage() {
 
               <div>
                 <label className="block text-black dark:text-white font-semibold mb-2">
-                  Rok zbudowania*
+                  Rok zbudowania
                 </label>
                 <input
                   type="number"
@@ -427,7 +427,6 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, year: e.target.value })
                   }
-                  required
                   min="1"
                   className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl text-black dark:text-white focus:border-blue-500 focus:outline-none"
                   placeholder="np. 2024"
@@ -480,7 +479,7 @@ export default function AdminPage() {
 
               <div>
                 <label className="block text-black dark:text-white font-semibold mb-2">
-                  Zdjęcia {!editingEstate && "*"} (max 10 plików, każdy do 10MB)
+                  Zdjęcia {!editingEstate && "*"} (max 20 plików, każdy do 20MB)
                   {editingEstate && " (dodaj nowe jeśli chcesz je zmienić)"}
                 </label>
                 <input
@@ -649,10 +648,11 @@ export default function AdminPage() {
                         </td>
                         <td className="py-4 px-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold ${estate.status
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                              estate.status
                                 ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                                 : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                              }`}
+                            }`}
                           >
                             {estate.status ? "Sprzedane" : "Dostępne"}
                           </span>
